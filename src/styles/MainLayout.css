@@ -15,12 +15,25 @@
 
 .site-header {
   padding: 0 20px;
-  background: #fff;
+  background: #001529;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   z-index: 1;
+  height: 64px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.company-name {
+  margin-left: 16px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
 }
 
 .site-content {
@@ -40,6 +53,7 @@
 .trigger {
   font-size: 18px;
   cursor: pointer;
+  color: #fff;
 }
 
 .header-right {
@@ -53,10 +67,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  color: #fff;
 }
 
 .username {
   margin-left: 8px;
+  color: #fff;
 }
 
 .notification-icon {
@@ -64,6 +80,7 @@
   font-size: 18px;
   cursor: pointer;
   padding: 0 8px;
+  color: #fff;
 }
 
 .badge {
@@ -101,5 +118,13 @@
   
   .content-container {
     padding: 12px;
+  }
+  
+  .company-name {
+    font-size: 14px;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 } 
