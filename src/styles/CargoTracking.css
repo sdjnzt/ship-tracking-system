@@ -1,0 +1,81 @@
+.cargo-tracking {
+  width: 100%;
+}
+
+.search-card {
+  margin-bottom: 20px;
+}
+
+.cargo-list-card {
+  margin-bottom: 20px;
+}
+
+.cargo-details {
+  margin-bottom: 24px;
+}
+
+.tracking-progress {
+  margin-bottom: 24px;
+}
+
+.tracking-history {
+  margin-bottom: 20px;
+}
+
+.history-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 16px;
+}
+
+.history-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.history-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.history-content {
+  margin-left: 12px;
+  flex: 1;
+}
+
+.history-time {
+  color: #8c8c8c;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.history-info {
+  font-size: 14px;
+}
+
+.delay-warning {
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  padding: 12px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  color: #ff4d4f;
+  gap: 8px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .ant-descriptions-item-label,
+  .ant-descriptions-item-content {
+    padding: 8px;
+  }
+  
+  .ant-steps-horizontal:not(.ant-steps-label-vertical) .ant-steps-item {
+    margin-right: 16px;
+  }
+} 

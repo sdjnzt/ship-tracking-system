@@ -1,46 +1,113 @@
-# Getting Started with Create React App
+# 船舶可视化物流追踪系统
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+一个基于React和TypeScript开发的船舶物流追踪和可视化系统，为中交润杨（山东）国际物流有限公司提供全球航运业务支持。
 
-## Available Scripts
+## 项目背景
 
-In the project directory, you can run:
+随着全球航运业的发展，物流追踪的需求日益增长。本系统通过整合先进的可视化技术、数据分析和实时监控，提供了一个全面的船舶和货物追踪平台。该系统可以帮助航运企业提高运营效率、降低物流成本，并为客户提供端到端的透明化管理。
 
-### `npm start`
+## 功能模块
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+1. **实时定位模块**
+   - 利用GPS和AIS技术，实时获取船舶位置并在地图上显示
+   - 精确确定船舶在全球海洋中的位置
+   - 提供直观的电子地图显示
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+2. **路径规划模块**
+   - 根据天气、海况等因素，提供最优航行路径建议
+   - 实时收集气象预报、海浪高度、海流速度等海洋环境数据
+   - 结合船舶自身性能和目的地信息，计算出最佳的航行路径
 
-### `npm test`
+3. **货物追踪模块**
+   - 通过RFID或条形码技术，实时监控货物状态
+   - 每件货物贴上RFID标签或条形码，系统通过读取设备获取货物的位置、温度、湿度等状态信息
+   - 确保货物在运输过程中的安全和完好
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+4. **异常预警模块**
+   - 对偏离航线、延误等异常情况发出预警
+   - 系统持续监测船舶的航行轨迹和时间计划
+   - 当出现偏离预设航线一定范围或预计到达时间延误等异常情况时，立即发出声光和信息提醒
 
-### `npm run build`
+5. **数据分析模块**
+   - 提供历史数据分析和决策生成功能
+   - 收集和存储船舶航行过程中的各类数据
+   - 通过数据分析工具对这些数据进行深入分析，生成图表和报表
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 技术栈
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- **前端框架**：React, TypeScript
+- **UI库**：Ant Design
+- **数据可视化**：ECharts, AntV/L7
+- **地图服务**：高德地图API（实际项目中需集成）
+- **状态管理**：React Hooks
+- **路由**：React Router
+- **数据请求**：Axios
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 如何开始
 
-### `npm run eject`
+1. 克隆仓库
+   ```
+   git clone [仓库地址]
+   ```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+2. 安装依赖
+   ```
+   cd ship-tracking-system
+   npm install
+   ```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+3. 启动开发服务器
+   ```
+   npm start
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+4. 构建生产版本
+   ```
+   npm run build
+   ```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## 项目结构
 
-## Learn More
+```
+ship-tracking-system/
+├── public/                   # 静态资源
+├── src/                      # 源代码
+│   ├── assets/               # 图片、字体等资源
+│   ├── components/           # 通用组件
+│   ├── data/                 # 模拟数据
+│   ├── layouts/              # 布局组件
+│   ├── pages/                # 页面组件
+│   ├── services/             # API服务
+│   ├── styles/               # CSS样式
+│   ├── utils/                # 工具函数
+│   ├── App.tsx               # 应用入口
+│   └── index.tsx             # React入口
+├── package.json              # 项目依赖
+└── tsconfig.json             # TypeScript配置
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 验收标准
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. **定位精度**：在开阔海域定位误差不超过10米；在复杂海域（如港口、狭窄水道）定位误差不超过20米。
+2. **实时性**：位置更新间隔不超过1分钟。
+3. **地图显示**：地图应准确显示船舶位置，且能清晰呈现周边地理信息和其他船舶位置。
+4. **路径合理性**：规划路径应避开恶劣天气区域、危险海域和交通密集区域，且航行时间和燃油消耗应达到路径至少优化10%。
+5. **数据准确性**：所依据的天气和海况数据应与权威数据源误差在可接受范围内（如风速误差不超过5%，海浪高度误差不超过10%）。
+6. **更新及时性**：当天气或海况发生重大变化时，能在1小时内重新规划路径并推送至相关人员。
+7. **读取准确率**：RFID或条形码读取准确率不低于99%。
+8. **状态监控**：能实时准确监控货物的关键状态参数（如温度偏差在±2℃内，湿度偏差在±5%内）。
+9. **数据传输**：货物状态数据传输延迟不超过30秒。
+10. **预警准确性**：正确识别异常情况的准确率不低于95%，误报率不超过5%。
+11. **预警及时性**：在异常情况发生后5分钟内发出预警信号。
+12. **预警方式**：具备多种预警方式（如声光、短信、系统弹窗），确保相关人员能及时接收到预警信息。
+13. **数据完整性**：历史数据存储完整率不低于99%。
+14. **分析准确性**：数据分析结果与实际情况偏差不超过10%。
+15. **报表生成**：能在用户请求后10分钟内生成指定格式和内容的报表。
+
+## 使用单位
+
+中交润杨（山东）国际物流有限公司
+
+## 联系方式
+
+公司地址：济宁市任城区同济路与山博路交叉口西南160米

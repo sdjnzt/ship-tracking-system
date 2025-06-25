@@ -1,25 +1,26 @@
 import React from 'react';
-import logo from './logo.svg';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import MainLayout from './layouts/MainLayout';
+import Dashboard from './pages/Dashboard';
+import ShipTracking from './pages/ShipTracking';
+import CargoTracking from './pages/CargoTracking';
 import './App.css';
+
+// Import Ant Design styles
+import 'antd/dist/antd.min.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <MainLayout>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/ship-tracking" element={<ShipTracking />} />
+          <Route path="/cargo-tracking" element={<CargoTracking />} />
+          {/* 其他路由可在此添加 */}
+        </Routes>
+      </MainLayout>
+    </Router>
   );
 }
 

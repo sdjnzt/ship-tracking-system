@@ -1,0 +1,147 @@
+.ship-tracking {
+  width: 100%;
+}
+
+.map-card {
+  margin-bottom: 20px;
+}
+
+.map-placeholder {
+  height: 500px;
+  background-color: #e6f7ff;
+  position: relative;
+  border: 1px solid #91d5ff;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  text-align: center;
+  background-color: rgba(230, 247, 255, 0.8);
+  z-index: 1;
+}
+
+.filter-row {
+  margin-bottom: 16px;
+}
+
+.ship-table-card {
+  margin-bottom: 20px;
+}
+
+.port-markers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.port-marker {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 3;
+}
+
+.port-icon {
+  font-size: 24px;
+  color: #1890ff;
+}
+
+.port-name {
+  font-size: 12px;
+  background-color: white;
+  padding: 2px 4px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.ship-markers {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+}
+
+.ship-marker {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  background-color: white;
+  border: 2px solid #1890ff;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s;
+  z-index: 5;
+}
+
+.ship-marker:hover {
+  transform: scale(1.2);
+}
+
+.ship-marker.normal {
+  border-color: #52c41a;
+}
+
+.ship-marker.warning {
+  border-color: #faad14;
+}
+
+.ship-marker.danger {
+  border-color: #ff4d4f;
+}
+
+.ship-icon {
+  font-size: 14px;
+}
+
+.ship-details {
+  margin-top: 16px;
+}
+
+.track-info {
+  margin-top: 16px;
+}
+
+.track-points {
+  margin-top: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.track-point {
+  margin-bottom: 12px;
+  padding: 8px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.track-point:last-child {
+  margin-bottom: 0;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .map-placeholder {
+    height: 300px;
+  }
+} 
