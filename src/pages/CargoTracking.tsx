@@ -28,6 +28,25 @@ import '../styles/CargoTracking.css';
 const { Title, Text } = Typography;
 const { Step } = Steps;
 
+// 统计卡片组件
+const CargoStats: React.FC<{ cargos: CargoTrackingData[] }> = ({ cargos }) => {
+  const total = cargos.length;
+  const shipping = cargos.filter(c => c.status === 'shipped').length;
+  const arrived = cargos.filter(c => c.status === 'arrived').length;
+  const delayed = cargos.filter(c => c.status === 'delayed').length;
+  const coldChain = cargos.filter(c => c.type.includes('冷冻') || c.temperature !== undefined).length;
+
+  return (
+    <Row gutter={16} className="cargo-stats-row" style={{ marginBottom: 20 }}>
+      <Col><Card className="stat-card" bordered={false}><div className="stat-title">总货物数</div><div className="stat-value">{total}</div></Card></Col>
+      <Col><Card className="stat-card" bordered={false}><div className="stat-title">运输中</div><div className="stat-value">{shipping}</div></Card></Col>
+      <Col><Card className="stat-card" bordered={false}><div className="stat-title">已到达</div><div className="stat-value">{arrived}</div></Card></Col>
+      <Col><Card className="stat-card" bordered={false}><div className="stat-title">延误</div><div className="stat-value">{delayed}</div></Card></Col>
+      <Col><Card className="stat-card" bordered={false}><div className="stat-title">冷链货物</div><div className="stat-value">{coldChain}</div></Card></Col>
+    </Row>
+  );
+};
+
 const CargoTracking: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [filteredCargos, setFilteredCargos] = useState<CargoTrackingData[]>(mockCargos);
@@ -110,20 +129,61 @@ const CargoTracking: React.FC = () => {
       dataIndex: 'type',
       key: 'type',
     },
+    // {
+    //   title: '价值(元)',
+    //   dataIndex: 'value',
+    //   key: 'value',
+    //   render: (v: number) => v ? v.toLocaleString() : '-',
+    // },
     {
-      title: '客户',
-      dataIndex: 'client',
-      key: 'client',
+      title: '运输方式',
+      dataIndex: 'transportMode',
+      key: 'transportMode',
+    },
+    // {
+    //   title: '运输公司',
+    //   dataIndex: 'carrier',
+    //   key: 'carrier',
+    // },
+    {
+      title: '体积(m³)',
+      dataIndex: 'volume',
+      key: 'volume',
+      render: (v: number) => v ? v : '-',
     },
     {
-      title: '出发地',
-      dataIndex: 'origin',
-      key: 'origin',
+      title: '包装',
+      dataIndex: 'packageType',
+      key: 'packageType',
     },
     {
-      title: '目的地',
-      dataIndex: 'destination',
-      key: 'destination',
+      title: '风险等级',
+      dataIndex: 'riskLevel',
+      key: 'riskLevel',
+      render: (v: string) => v ? <Tag color={v === '高' ? 'red' : v === '中' ? 'orange' : 'green'}>{v}</Tag> : '-',
+    },
+    {
+      title: '预计送达',
+      dataIndex: 'estimatedDelivery',
+      key: 'estimatedDelivery',
+      render: (v: string) => v ? new Date(v).toLocaleDateString() : '-',
+    },
+    // {
+    //   title: '条码',
+    //   dataIndex: 'barcode',
+    //   key: 'barcode',
+    //   render: (v: string) => v ? <span title={v}>{v.slice(0, 6)}...{v.slice(-3)}</span> : '-',
+    // },
+    // {
+    //   title: '司机/船长',
+    //   dataIndex: 'driverName',
+    //   key: 'driverName',
+    // },
+    {
+      title: '备注',
+      dataIndex: 'remark',
+      key: 'remark',
+      render: (v: string) => v ? <span title={v}>{v.length > 8 ? v.slice(0, 8) + '...' : v}</span> : '-',
     },
     {
       title: '状态',
@@ -149,6 +209,7 @@ const CargoTracking: React.FC = () => {
   return (
     <div className="cargo-tracking">
       <Title level={2}>货物追踪</Title>
+      <CargoStats cargos={filteredCargos} />
       
       <Card className="search-card">
         <Row gutter={16} align="middle">
@@ -184,35 +245,81 @@ const CargoTracking: React.FC = () => {
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
-        width={800}
+        width={900}
       >
         {selectedCargo && (
           <>
-            <Descriptions bordered column={2} className="cargo-details">
+            {/* 货物基础信息 */}
+            <Descriptions bordered column={2} className="cargo-details" title="基础信息">
               <Descriptions.Item label="货物ID" span={2}>{selectedCargo.id}</Descriptions.Item>
+              <Descriptions.Item label="货物名称">{selectedCargo.name}</Descriptions.Item>
               <Descriptions.Item label="货物类型">{selectedCargo.type}</Descriptions.Item>
               <Descriptions.Item label="重量">{selectedCargo.weight} 吨</Descriptions.Item>
+              {selectedCargo.volume && <Descriptions.Item label="体积">{selectedCargo.volume} m³</Descriptions.Item>}
+              {selectedCargo.packageType && <Descriptions.Item label="包装类型">{selectedCargo.packageType}</Descriptions.Item>}
+              {selectedCargo.dangerLevel && <Descriptions.Item label="危险品等级">{selectedCargo.dangerLevel}</Descriptions.Item>}
+              {selectedCargo.insurance && <Descriptions.Item label="保险信息">{selectedCargo.insurance}</Descriptions.Item>}
               <Descriptions.Item label="出发地">{selectedCargo.origin}</Descriptions.Item>
               <Descriptions.Item label="目的地">{selectedCargo.destination}</Descriptions.Item>
               <Descriptions.Item label="客户">{selectedCargo.client}</Descriptions.Item>
               <Descriptions.Item label="运输船舶">{selectedCargo.shipId}</Descriptions.Item>
-              {selectedCargo.containerId && (
-                <Descriptions.Item label="集装箱编号">{selectedCargo.containerId}</Descriptions.Item>
-              )}
-              {selectedCargo.temperature && (
-                <Descriptions.Item label="温度">{selectedCargo.temperature} °C</Descriptions.Item>
-              )}
-              {selectedCargo.humidity && (
-                <Descriptions.Item label="湿度">{selectedCargo.humidity} %</Descriptions.Item>
-              )}
-              <Descriptions.Item label="预计送达时间">
-                {new Date(selectedCargo.estimatedDelivery).toLocaleString()}
-              </Descriptions.Item>
-              <Descriptions.Item label="状态">
-                {getStatusTag(selectedCargo.status)}
-              </Descriptions.Item>
+              {selectedCargo.containerId && <Descriptions.Item label="集装箱编号">{selectedCargo.containerId}</Descriptions.Item>}
+              {selectedCargo.temperature !== undefined && <Descriptions.Item label="温度">{selectedCargo.temperature} °C</Descriptions.Item>}
+              {selectedCargo.humidity !== undefined && <Descriptions.Item label="湿度">{selectedCargo.humidity} %</Descriptions.Item>}
+              <Descriptions.Item label="预计送达时间">{new Date(selectedCargo.estimatedDelivery).toLocaleString()}</Descriptions.Item>
+              <Descriptions.Item label="状态">{getStatusTag(selectedCargo.status)}</Descriptions.Item>
             </Descriptions>
 
+            {/* 实时状态与运输相关 */}
+            <Descriptions bordered column={2} className="cargo-details" title="运输与实时状态">
+              {selectedCargo.currentLocation && (
+                <Descriptions.Item label="当前位置" span={2}>
+                  {selectedCargo.currentLocation.port ? `${selectedCargo.currentLocation.port}（${selectedCargo.currentLocation.desc}）` : `${selectedCargo.currentLocation.longitude}, ${selectedCargo.currentLocation.latitude}`}
+                </Descriptions.Item>
+              )}
+              {selectedCargo.transportMode && <Descriptions.Item label="运输方式">{selectedCargo.transportMode}</Descriptions.Item>}
+              {selectedCargo.transitPorts && <Descriptions.Item label="中转港口">{selectedCargo.transitPorts.join('、')}</Descriptions.Item>}
+              {selectedCargo.remainingTime && <Descriptions.Item label="预计剩余时间">{selectedCargo.remainingTime}</Descriptions.Item>}
+              {selectedCargo.transportFee && <Descriptions.Item label="运输费用">￥{selectedCargo.transportFee.toLocaleString()}</Descriptions.Item>}
+            </Descriptions>
+
+            {/* 收发货人信息 */}
+            <Descriptions bordered column={2} className="cargo-details" title="收发货人信息">
+              {selectedCargo.sender && <Descriptions.Item label="发货人">{selectedCargo.sender}</Descriptions.Item>}
+              {selectedCargo.senderContact && <Descriptions.Item label="发货人联系方式">{selectedCargo.senderContact}</Descriptions.Item>}
+              {selectedCargo.receiver && <Descriptions.Item label="收货人">{selectedCargo.receiver}</Descriptions.Item>}
+              {selectedCargo.receiverContact && <Descriptions.Item label="收货人联系方式">{selectedCargo.receiverContact}</Descriptions.Item>}
+            </Descriptions>
+
+            {/* 费用明细 */}
+            {selectedCargo.feeDetail && (
+              <Card title="费用明细" size="small" style={{ marginBottom: 16 }}>
+                <Table
+                  dataSource={selectedCargo.feeDetail.map((f, i) => ({ ...f, key: i }))}
+                  columns={[
+                    { title: '项目', dataIndex: 'item', key: 'item' },
+                    { title: '金额', dataIndex: 'amount', key: 'amount', render: (v: number) => `￥${v.toLocaleString()}` }
+                  ]}
+                  size="small"
+                  pagination={false}
+                />
+              </Card>
+            )}
+
+            {/* 异常历史 */}
+            {selectedCargo.abnormalHistory && selectedCargo.abnormalHistory.length > 0 && (
+              <Card title="异常历史" size="small" style={{ marginBottom: 16 }}>
+                <ul style={{ paddingLeft: 16 }}>
+                  {selectedCargo.abnormalHistory.map((ab, idx) => (
+                    <li key={idx} style={{ marginBottom: 8 }}>
+                      <b>{ab.type}</b>（{new Date(ab.time).toLocaleString()}）：{ab.desc}
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
+
+            {/* 追踪进度 */}
             <div className="tracking-progress">
               <Title level={4}>追踪进度</Title>
               <Steps 
@@ -226,6 +333,7 @@ const CargoTracking: React.FC = () => {
               </Steps>
             </div>
 
+            {/* 追踪历史 */}
             <div className="tracking-history">
               <Title level={4}>追踪历史</Title>
               <ul className="history-list">

@@ -1,84 +1,159 @@
 .dashboard {
-  width: 100%;
+  padding: 24px;
 }
 
 .stats-row {
   margin-bottom: 24px;
 }
 
+.stats-row .ant-card {
+  height: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s;
+}
+
+.stats-row .ant-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-3px);
+}
+
+.stat-footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 12px;
+}
+
+.map-row {
+  margin-bottom: 24px;
+}
+
+.map-card {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  height: 400px;
+}
+
 .content-row {
   margin-bottom: 24px;
+}
+
+.table-card, .alert-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  height: 100%;
 }
 
 .chart-row {
   margin-bottom: 24px;
 }
 
-.port-activity-row {
-  margin-bottom: 24px;
-}
-
-.stat-footer {
-  margin-top: 10px;
-}
-
-.alert-icon {
-  font-size: 18px;
-  padding: 8px;
-  border-radius: 50%;
-  background-color: #f5f5f5;
-}
-
-.alert-icon.high {
-  color: #ff4d4f;
-  background-color: #fff2f0;
-}
-
-.alert-icon.medium {
-  color: #faad14;
-  background-color: #fffbe6;
-}
-
-.alert-icon.low {
-  color: #1890ff;
-  background-color: #e6f7ff;
-}
-
-.high {
-  color: #ff4d4f;
-}
-
-.medium {
-  color: #faad14;
-}
-
-.low {
-  color: #1890ff;
-}
-
-.table-card, .alert-card {
+.chart-row .ant-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   height: 100%;
+  min-height: 360px;
+}
+
+.port-activity-row .ant-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .port-activity-card {
   margin-bottom: 16px;
-  text-align: center;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  border: 1px solid #f0f0f0;
 }
 
 .port-activity-details {
-  margin-top: 8px;
+  margin-top: 12px;
   display: flex;
   justify-content: space-between;
-  color: #666;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.alert-icon {
+  font-size: 20px;
+  margin-right: 8px;
+}
+
+.alert-icon.high {
+  color: #ff4d4f;
+}
+
+.alert-icon.medium {
+  color: #faad14;
+}
+
+.alert-icon.low {
+  color: #1890ff;
+}
+
+span.high {
+  color: #ff4d4f;
+  font-weight: 500;
+}
+
+span.medium {
+  color: #faad14;
+  font-weight: 500;
+}
+
+span.low {
+  color: #1890ff;
+  font-weight: 500;
+}
+
+/* 数据卡片标题样式 */
+.ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 16px;
+}
+
+.ant-card-head-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* 统计数字样式 */
+.ant-statistic-title {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.ant-statistic-content {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* 表格样式 */
+.ant-table-thead > tr > th {
+  background: #fafafa;
+  font-weight: 600;
+}
+
+/* 图表容器样式 */
+.chart-container {
+  height: 300px;
+  padding: 16px 0;
 }
 
 /* 响应式调整 */
 @media (max-width: 768px) {
-  .port-activity-details {
-    flex-direction: column;
+  .dashboard {
+    padding: 12px;
   }
   
-  .stats-row .ant-card {
-    margin-bottom: 16px;
+  .stats-row .ant-card, 
+  .map-card, 
+  .table-card, 
+  .alert-card, 
+  .chart-row .ant-card {
+    margin-bottom: 12px;
   }
 } 

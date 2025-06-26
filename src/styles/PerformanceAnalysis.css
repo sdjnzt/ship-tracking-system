@@ -1,0 +1,237 @@
+.performance-analysis {
+  padding: 20px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.page-header h3 {
+  margin-bottom: 8px;
+}
+
+.performance-tabs {
+  margin-bottom: 16px;
+}
+
+.stats-row {
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.stat-footer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.chart-card, .table-card, .info-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .page-header > div:last-child {
+    margin-top: 16px;
+  }
+}
+
+/* 新增船舶绩效排行榜样式 */
+.performance-rank-table .ant-table-thead > tr > th {
+  background-color: #f5f7fa;
+  font-weight: 600;
+  color: #333;
+  padding: 16px 12px;
+  font-size: 14px;
+}
+
+.performance-rank-table .ant-table-tbody > tr:hover > td {
+  background-color: #f0f7ff;
+}
+
+.performance-table-row td {
+  padding: 16px 12px !important;
+}
+
+.performance-rank-table .ant-table-tbody > tr > td {
+  transition: all 0.3s ease;
+}
+
+.performance-rank-table .ant-table-pagination {
+  margin: 20px 0;
+}
+
+.performance-rank-table .ant-progress {
+  margin-right: 0;
+}
+
+.rank-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-weight: bold;
+  color: white;
+}
+
+.rank-number-1 {
+  background-color: #f5222d;
+}
+
+.rank-number-2 {
+  background-color: #fa8c16;
+}
+
+.rank-number-3 {
+  background-color: #faad14;
+}
+
+.rank-number-other {
+  background-color: #d9d9d9;
+  color: #666;
+}
+
+.performance-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.performance-progress-bar {
+  flex-grow: 1;
+}
+
+.performance-progress-text {
+  width: 36px;
+  text-align: right;
+  font-weight: 500;
+}
+
+.ship-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ship-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+.performance-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.performance-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.trend-indicator {
+  font-size: 12px;
+}
+
+.trend-up {
+  color: #52c41a;
+}
+
+.trend-down {
+  color: #ff4d4f;
+}
+
+.composite-score {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.composite-score-number {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.level-tag {
+  border-radius: 4px;
+  padding: 1px 8px;
+  font-weight: bold;
+}
+
+.rank-card {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rank-card .ant-card-head {
+  background-color: #fafafa;
+}
+
+.filters-row {
+  padding: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.hover-buttons {
+  visibility: hidden;
+  opacity: 0;
+  transition: visibility 0s, opacity 0.3s linear;
+}
+
+.ant-table-row:hover .hover-buttons {
+  visibility: visible;
+  opacity: 1;
+} 

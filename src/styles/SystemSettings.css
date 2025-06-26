@@ -1,0 +1,116 @@
+.system-settings-page {
+  padding: 20px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.settings-tabs {
+  margin-bottom: 24px;
+}
+
+.settings-card {
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.settings-tabs .ant-tabs-tab {
+  padding: 12px 16px;
+}
+
+.stat-card {
+  height: 100%;
+}
+
+.stat-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.loading-container {
+  padding: 50px;
+  text-align: center;
+}
+
+.settings-card .ant-form-item-label {
+  font-weight: 500;
+}
+
+.settings-card .ant-slider-mark-text {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.settings-card .ant-alert {
+  margin-bottom: 24px;
+}
+
+.info-card {
+  background-color: #fafafa;
+}
+
+.info-card .ant-card-body {
+  padding: 24px;
+}
+
+.info-card h5 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-card .ant-table-tbody > tr:hover > td {
+  background-color: #f5f5f5;
+}
+
+/* 颜色设置预览 */
+.color-preview {
+  width: 100%;
+  height: 24px;
+  border-radius: 4px;
+  margin-top: 8px;
+  border: 1px solid #d9d9d9;
+}
+
+/* 按钮组样式 */
+.button-group-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.button-group-container .ant-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+}
+
+/* 集成面板样式 */
+.integration-panel .ant-collapse-header {
+  font-weight: 500;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .page-header .ant-space {
+    margin-top: 16px;
+  }
+  
+  .settings-tabs .ant-tabs-tab {
+    padding: 8px 12px;
+  }
+} 

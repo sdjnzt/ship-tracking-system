@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Row, Col, Table, Input, Select, Button, Tag, Drawer, Typography, Descriptions, Tabs } from 'antd';
-import { SearchOutlined, EnvironmentOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Card, Row, Col, Table, Input, Select, Button, Tag, Drawer, Typography, Descriptions, Tabs, Empty, Tooltip } from 'antd';
+import { SearchOutlined, InfoCircleOutlined, EnvironmentOutlined, CompassOutlined, BarChartOutlined, 
+  FilterOutlined, ReloadOutlined, FullscreenOutlined, SettingOutlined, BellOutlined } from '@ant-design/icons';
 import { mockShips, mockPorts, getShipTrack, ShipData } from '../data/mockData';
+import AMapComponent from '../components/AMapComponent';
 import '../styles/ShipTracking.css';
 
 const { Title, Text } = Typography;
@@ -12,9 +14,28 @@ const ShipTracking: React.FC = () => {
   const [ships, setShips] = useState(mockShips);
   const [searchText, setSearchText] = useState('');
   const [filterType, setFilterType] = useState('all');
-  const [selectedShip, setSelectedShip] = useState<any>(null);
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [selectedShip, setSelectedShip] = useState<ShipData | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [mapMode, setMapMode] = useState<'terrain' | 'satellite' | 'standard'>('terrain');
+  const [isTracking, setIsTracking] = useState(true);
+  const [showLabels, setShowLabels] = useState(true);
+  const [showWeather, setShowWeather] = useState(false);
+  const [showLegend, setShowLegend] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
+  // 每2秒更新一次船舶位置
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      if (isTracking) {
+        setLastUpdate(new Date());
+      }
+    }, 2000);
+    
+    return () => clearInterval(intervalId);
+  }, [isTracking]);
+
+  // 处理搜索和筛选
   const handleSearch = () => {
     let filtered = mockShips;
     
@@ -28,6 +49,10 @@ const ShipTracking: React.FC = () => {
     if (filterType !== 'all') {
       filtered = filtered.filter(ship => ship.type === filterType);
     }
+
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter(ship => ship.status === filterStatus);
+    }
     
     setShips(filtered);
   };
@@ -35,56 +60,77 @@ const ShipTracking: React.FC = () => {
   const handleReset = () => {
     setSearchText('');
     setFilterType('all');
+    setFilterStatus('all');
     setShips(mockShips);
   };
 
-  const showShipDetails = (ship: any) => {
+  const showShipDetails = (ship: ShipData) => {
     setSelectedShip(ship);
     setDrawerVisible(true);
   };
 
   const shipTypes = Array.from(new Set(mockShips.map(ship => ship.type)));
 
+  // 获取船舶状态文本
+  const getStatusText = (status: string) => {
+    switch(status) {
+      case 'normal': return '正常';
+      case 'warning': return '警告';
+      case 'danger': return '危险';
+      default: return '未知';
+    }
+  };
+
+  // 获取船舶状态颜色
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'normal': return 'green';
+      case 'warning': return 'orange';
+      case 'danger': return 'red';
+      default: return 'default';
+    }
+  };
+
+  // 表格列配置
   const columns = [
     {
       title: '船名',
       dataIndex: 'name',
       key: 'name',
+      sorter: (a: ShipData, b: ShipData) => a.name.localeCompare(b.name),
     },
     {
       title: '类型',
       dataIndex: 'type',
       key: 'type',
-    },
-    {
-      title: '目的地',
-      dataIndex: 'destination',
-      key: 'destination',
+      filters: shipTypes.map(type => ({ text: type, value: type })),
+      onFilter: (value: any, record: ShipData) => record.type === value,
     },
     {
       title: '速度 (节)',
       dataIndex: 'speed',
       key: 'speed',
       sorter: (a: ShipData, b: ShipData) => a.speed - b.speed,
+      render: (speed: number) => <span>{speed} 节</span>,
+    },
+    {
+      title: '位置',
+      key: 'position',
+      render: (record: ShipData) => (
+        <span>
+          {record.position.longitude.toFixed(2)}°E, {record.position.latitude.toFixed(2)}°N
+        </span>
+      ),
     },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => {
-        let color = 'green';
-        let text = '正常';
-        
-        if (status === 'warning') {
-          color = 'orange';
-          text = '警告';
-        } else if (status === 'danger') {
-          color = 'red';
-          text = '危险';
-        }
-        
-        return <Tag color={color}>{text}</Tag>;
-      },
+      render: (status: string) => (
+        <Tag color={getStatusColor(status)}>
+          {getStatusText(status)}
+        </Tag>
+      ),
       filters: [
         { text: '正常', value: 'normal' },
         { text: '警告', value: 'warning' },
@@ -108,110 +154,182 @@ const ShipTracking: React.FC = () => {
   ];
 
   return (
-    <div className="ship-tracking">
-      <Title level={2}>船舶实时定位</Title>
-      
-      <Row gutter={[16, 16]}>
-        <Col span={24}>
-          <Card className="map-card">
-            <div className="map-placeholder">
-              <div className="map-overlay">
-                <Title level={3}>地图加载中...</Title>
-                <Text type="secondary">此处将显示实时船舶定位地图，包含船舶位置、航线和港口信息。</Text>
-                <Text type="secondary">在实际项目中，可以集成高德地图、百度地图或 Mapbox 等地图服务。</Text>
-              </div>
-              <div className="port-markers">
-                {mockPorts.map(port => (
-                  <div 
-                    className="port-marker" 
-                    key={port.id}
-                    style={{ 
-                      left: `${(port.position.longitude - 115) * 30}px`, 
-                      top: `${400 - (port.position.latitude - 30) * 30}px`
-                    }}
-                    title={`${port.name} (在港船舶: ${port.ships.length})`}
-                  >
-                    <div className="port-icon">
-                      <EnvironmentOutlined />
-                    </div>
-                    <div className="port-name">{port.name}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="ship-markers">
-                {ships.map(ship => (
-                  <div 
-                    className={`ship-marker ${ship.status}`} 
-                    key={ship.id}
-                    style={{ 
-                      left: `${(ship.position.longitude - 115) * 30}px`, 
-                      top: `${400 - (ship.position.latitude - 30) * 30}px`
-                    }}
-                    onClick={() => showShipDetails(ship)}
-                    title={ship.name}
-                  >
-                    <div className="ship-icon">⚓</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Card>
-        </Col>
-      </Row>
-      
-      <Row gutter={[16, 16]} className="filter-row">
-        <Col xs={24} sm={8} md={6}>
-          <Input 
-            placeholder="搜索船名或目的地" 
-            value={searchText}
-            onChange={e => setSearchText(e.target.value)}
-            prefix={<SearchOutlined />}
-          />
-        </Col>
-        <Col xs={24} sm={8} md={6}>
-          <Select
-            style={{ width: '100%' }}
-            placeholder="选择船舶类型"
-            value={filterType}
-            onChange={value => setFilterType(value)}
-          >
-            <Option value="all">全部类型</Option>
-            {shipTypes.map((type, index) => (
-              <Option value={type} key={index}>{type}</Option>
-            ))}
-          </Select>
-        </Col>
-        <Col xs={12} sm={4} md={3}>
-          <Button type="primary" onClick={handleSearch} block>
-            筛选
-          </Button>
-        </Col>
-        <Col xs={12} sm={4} md={3}>
-          <Button onClick={handleReset} block>
-            重置
-          </Button>
-        </Col>
-      </Row>
-      
-      <Row gutter={[16, 16]}>
-        <Col span={24}>
-          <Card title="船舶列表" className="ship-table-card">
-            <Table 
-              dataSource={ships} 
-              columns={columns} 
-              rowKey="id"
-              pagination={{ pageSize: 5 }}
+    <div className="ship-tracking-container">
+      {/* 顶部控制栏 */}
+      <div className="tracking-header">
+        <div className="header-left">
+          <Title level={4} className="page-title">船舶实时定位</Title>
+          <div className="tracking-status">
+            <span className={`status-dot ${isTracking ? 'active' : ''}`}></span>
+            <span className="status-text">{isTracking ? '实时跟踪中' : '已暂停'}</span>
+            <span className="update-time">最后更新: {lastUpdate.toLocaleTimeString()}</span>
+          </div>
+        </div>
+        <div className="header-right">
+          <div className="search-container">
+            <Input 
+              placeholder="搜索船名或目的地" 
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
+              prefix={<SearchOutlined />}
+              onPressEnter={handleSearch}
             />
-          </Card>
-        </Col>
-      </Row>
+            <Select
+              style={{ width: 120 }}
+              placeholder="船舶类型"
+              value={filterType}
+              onChange={value => setFilterType(value)}
+            >
+              <Option value="all">全部类型</Option>
+              {shipTypes.map((type, index) => (
+                <Option value={type} key={index}>{type}</Option>
+              ))}
+            </Select>
+            <Select
+              style={{ width: 120 }}
+              placeholder="船舶状态"
+              value={filterStatus}
+              onChange={value => setFilterStatus(value)}
+            >
+              <Option value="all">全部状态</Option>
+              <Option value="normal">正常</Option>
+              <Option value="warning">警告</Option>
+              <Option value="danger">危险</Option>
+            </Select>
+            <Button type="primary" icon={<FilterOutlined />} onClick={handleSearch}>
+              筛选
+            </Button>
+            <Button icon={<ReloadOutlined />} onClick={handleReset}>
+              重置
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* 主内容区 */}
+      <div className="tracking-content">
+        {/* 左侧地图区域 */}
+        <div className="map-container">
+          <div className="map-wrapper">
+            <AMapComponent 
+              ships={ships}
+              ports={mockPorts}
+              onShipClick={showShipDetails}
+            />
+          </div>
+          
+          {/* 地图控制按钮组 */}
+          <div className="map-controls">
+            <div className="control-group map-mode">
+              <Tooltip title="标准地图">
+                <Button 
+                  type={mapMode === 'standard' ? 'primary' : 'default'} 
+                  onClick={() => setMapMode('standard')}
+                >
+                  标准
+                </Button>
+              </Tooltip>
+              <Tooltip title="地形地图">
+                <Button 
+                  type={mapMode === 'terrain' ? 'primary' : 'default'} 
+                  onClick={() => setMapMode('terrain')}
+                >
+                  地形
+                </Button>
+              </Tooltip>
+              <Tooltip title="卫星地图">
+                <Button 
+                  type={mapMode === 'satellite' ? 'primary' : 'default'} 
+                  onClick={() => setMapMode('satellite')}
+                >
+                  卫星
+                </Button>
+              </Tooltip>
+            </div>
+            
+            <div className="control-group display-controls">
+              <Tooltip title={showLabels ? "隐藏标签" : "显示标签"}>
+                <Button 
+                  icon={<EnvironmentOutlined />} 
+                  type={showLabels ? 'primary' : 'default'}
+                  onClick={() => setShowLabels(!showLabels)}
+                />
+              </Tooltip>
+              <Tooltip title={showWeather ? "隐藏气象" : "显示气象"}>
+                <Button 
+                  icon={<CloudOutlined />} 
+                  type={showWeather ? 'primary' : 'default'}
+                  onClick={() => setShowWeather(!showWeather)}
+                />
+              </Tooltip>
+              <Tooltip title={showLegend ? "隐藏图例" : "显示图例"}>
+                <Button 
+                  icon={<BarsOutlined />} 
+                  type={showLegend ? 'primary' : 'default'}
+                  onClick={() => setShowLegend(!showLegend)}
+                />
+              </Tooltip>
+              <Tooltip title={isTracking ? "暂停跟踪" : "开始跟踪"}>
+                <Button 
+                  icon={isTracking ? <PauseOutlined /> : <PlayCircleOutlined />} 
+                  type={isTracking ? 'primary' : 'default'}
+                  onClick={() => setIsTracking(!isTracking)}
+                />
+              </Tooltip>
+            </div>
+          </div>
+        </div>
+        
+        {/* 右侧船舶列表 */}
+        <div className="ships-panel">
+          <div className="panel-header">
+            <h3>船舶列表</h3>
+            <div className="ship-count">共 {ships.length} 艘</div>
+          </div>
+          
+          <div className="ship-list">
+            {ships.map(ship => (
+              <div 
+                key={ship.id}
+                className={`ship-item ${ship.id === selectedShip?.id ? 'selected' : ''} ${ship.status}`}
+                onClick={() => showShipDetails(ship)}
+              >
+                <div className="ship-item-header">
+                  <div className="ship-name">{ship.name}</div>
+                  <div className={`ship-status ${ship.status}`}>
+                    {getStatusText(ship.status)}
+                  </div>
+                </div>
+                <div className="ship-item-details">
+                  <div className="detail-line">
+                    <span className="detail-label">类型:</span>
+                    <span className="detail-value">{ship.type}</span>
+                  </div>
+                  <div className="detail-line">
+                    <span className="detail-label">速度:</span>
+                    <span className="detail-value">{ship.speed} 节</span>
+                  </div>
+                  <div className="detail-line">
+                    <span className="detail-label">位置:</span>
+                    <span className="detail-value">
+                      {ship.position.longitude.toFixed(2)}°E, {ship.position.latitude.toFixed(2)}°N
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
       
+      {/* 船舶详情抽屉 */}
       <Drawer
         title={`船舶详情 - ${selectedShip?.name || ''}`}
         placement="right"
         onClose={() => setDrawerVisible(false)}
-        visible={drawerVisible}
+        open={drawerVisible}
         width={480}
+        className="ship-detail-drawer"
       >
         {selectedShip && (
           <Tabs defaultActiveKey="1">
@@ -230,12 +348,8 @@ const ShipTracking: React.FC = () => {
                   {new Date(selectedShip.estimatedArrival).toLocaleString()}
                 </Descriptions.Item>
                 <Descriptions.Item label="状态">
-                  <Tag color={
-                    selectedShip.status === 'normal' ? 'green' : 
-                    selectedShip.status === 'warning' ? 'orange' : 'red'
-                  }>
-                    {selectedShip.status === 'normal' ? '正常' : 
-                     selectedShip.status === 'warning' ? '警告' : '危险'}
+                  <Tag color={getStatusColor(selectedShip.status)}>
+                    {getStatusText(selectedShip.status)}
                   </Tag>
                 </Descriptions.Item>
               </Descriptions>
@@ -250,18 +364,18 @@ const ShipTracking: React.FC = () => {
                   )}
                 </Descriptions>
               ) : (
-                <Text>无货物信息</Text>
+                <Empty description="暂无货物信息" />
               )}
             </TabPane>
-            <TabPane tab="历史轨迹" key="3">
+            <TabPane tab="航行轨迹" key="3">
               <div className="track-info">
-                <Text>过去24小时航行轨迹点:</Text>
+                <Text>最近 24 小时航行轨迹</Text>
                 <div className="track-points">
                   {getShipTrack(selectedShip.id).map((point, index) => (
-                    <div key={index} className="track-point">
+                    <div className="track-point" key={index}>
                       <div>时间: {new Date(point.timestamp).toLocaleString()}</div>
                       <div>位置: 经度 {point.position.longitude.toFixed(4)}, 纬度 {point.position.latitude.toFixed(4)}</div>
-                      <div>速度: {point.speed.toFixed(1)} 节</div>
+                      <div>速度: {point.speed} 节</div>
                     </div>
                   ))}
                 </div>
@@ -273,5 +387,30 @@ const ShipTracking: React.FC = () => {
     </div>
   );
 };
+
+// 自定义图标
+const CloudOutlined = () => (
+  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
+    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z" />
+  </svg>
+);
+
+const BarsOutlined = () => (
+  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
+    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+  </svg>
+);
+
+const PauseOutlined = () => (
+  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
+    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+  </svg>
+);
+
+const PlayCircleOutlined = () => (
+  <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor">
+    <path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+  </svg>
+);
 
 export default ShipTracking; 

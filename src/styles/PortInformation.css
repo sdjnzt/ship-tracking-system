@@ -1,0 +1,183 @@
+/* 港口信息页面样式 */
+.port-information-container {
+  padding: 20px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.page-header h3 {
+  margin-bottom: 8px;
+}
+
+.stats-row {
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+  border-radius: 4px;
+  transition: all 0.3s;
+  height: 100%;
+}
+
+.stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.search-card, .port-list-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.port-detail-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+  border-radius: 4px;
+}
+
+.map-card, .stat-detail-card, .ships-list-card {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  height: 100%;
+}
+
+.port-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.port-country {
+  margin-left: 8px;
+  font-weight: normal;
+  font-size: 14px;
+}
+
+.ship-list-item {
+  transition: all 0.3s;
+}
+
+.ship-list-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.port-tabs {
+  margin-bottom: 16px;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.loading-container p {
+  margin-top: 16px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+/* Grid view styles */
+.port-card {
+  height: 100%;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.port-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.port-card-header {
+  margin-bottom: 16px;
+}
+
+.port-name {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+.port-card-body {
+  position: relative;
+}
+
+.port-occupancy {
+  margin-bottom: 16px;
+}
+
+.occupancy-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.occupancy-label {
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 14px;
+}
+
+.occupancy-value {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.port-stats {
+  margin-bottom: 16px;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.port-stat-item {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.port-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.port-row {
+  transition: all 0.3s;
+}
+
+.port-row:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.ports-table {
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .controls {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+} 

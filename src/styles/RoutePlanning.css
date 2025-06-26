@@ -1,0 +1,239 @@
+.route-planning-container {
+  padding: 20px;
+}
+
+.route-planning-card {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+}
+
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.route-config-section {
+  margin-bottom: 20px;
+}
+
+.config-card, .route-info-card {
+  height: 100%;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05);
+}
+
+.route-strategy-group {
+  display: flex;
+  width: 100%;
+  padding: 10px 0;
+}
+
+.route-strategy-option {
+  flex: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.route-steps {
+  margin: 16px 0;
+}
+
+.weather-risks {
+  margin-top: 15px;
+}
+
+.weather-risk-item {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  background-color: #f0f0f0;
+  border-left: 4px solid #ccc;
+}
+
+.weather-risk-item.low {
+  background-color: #f6ffed;
+  border-left-color: #52c41a;
+}
+
+.weather-risk-item.medium {
+  background-color: #fff7e6;
+  border-left-color: #faad14;
+}
+
+.weather-risk-item.high {
+  background-color: #fff1f0;
+  border-left-color: #f5222d;
+}
+
+.risk-type {
+  font-weight: 500;
+  margin-right: 10px;
+}
+
+.risk-severity {
+  padding: 0 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 20px;
+  margin-right: 10px;
+  background-color: #f0f0f0;
+}
+
+.low .risk-severity {
+  background-color: #d9f7be;
+  color: #237804;
+}
+
+.medium .risk-severity {
+  background-color: #ffe7ba;
+  color: #ad6800;
+}
+
+.high .risk-severity {
+  background-color: #ffccc7;
+  color: #a8071a;
+}
+
+.risk-time {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+}
+
+.route-map-container {
+  width: 100%;
+  height: 500px;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  transition: height 0.3s ease;
+}
+
+/* 当有路线数据时，增大地图高度 */
+.route-map-container.has-route {
+  height: 600px;
+}
+
+.map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(240, 242, 245, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: opacity 0.5s ease;
+}
+
+.map-overlay-content {
+  text-align: center;
+  color: #1890ff;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* 航线动画效果 */
+.route-path-group {
+  opacity: 0;
+  animation: fadeIn 1s forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.route-main-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawLine 2s forwards;
+}
+
+@keyframes drawLine {
+  to { stroke-dashoffset: 0; }
+}
+
+.waypoint-marker {
+  transform-origin: center;
+  animation: popIn 0.5s ease-out forwards;
+  animation-delay: 1.5s;
+  opacity: 0;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.direction-arrow {
+  opacity: 0;
+  animation: fadeIn 0.5s forwards;
+  animation-delay: 2s;
+}
+
+/* 响应式调整 */
+@media (max-width: 992px) {
+  .route-config-section > div {
+    margin-bottom: 20px;
+  }
+  
+  .route-map-container {
+    height: 400px;
+  }
+  
+  .route-map-container.has-route {
+    height: 450px;
+  }
+}
+
+/* 修饰 AMapComponent 中的船舶和港口标记 */
+.ship-marker.selected {
+  z-index: 100;
+  transform: scale(1.2);
+}
+
+.port-marker {
+  z-index: 50;
+}
+
+.port-marker.highlighted {
+  animation: highlight 2s infinite;
+}
+
+@keyframes highlight {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* 增强图表展示效果 */
+.ant-descriptions-bordered .ant-descriptions-item-label {
+  background-color: #fafafa;
+  font-weight: 500;
+} 
