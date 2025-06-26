@@ -2,7 +2,7 @@
   "name": "ship-tracking-system",
   "version": "0.1.0",
   "private": true,
-  "homepage": ".",
+  "homepage": "https://sdjnzt.github.io/ship-tracking-system",
   "dependencies": {
     "@amap/amap-react": "^0.1.5",
     "@ant-design/icons": "^4.8.0",
