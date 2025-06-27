@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/ship-tracking-system/static/css/main.54dbff1c.css",
-    "main.js": "/ship-tracking-system/static/js/main.0ba936bb.js",
+    "main.css": "/ship-tracking-system/static/css/main.197f93b8.css",
+    "main.js": "/ship-tracking-system/static/js/main.3002d1e7.js",
     "static/js/453.b726ad09.chunk.js": "/ship-tracking-system/static/js/453.b726ad09.chunk.js",
     "index.html": "/ship-tracking-system/index.html",
-    "main.54dbff1c.css.map": "/ship-tracking-system/static/css/main.54dbff1c.css.map",
-    "main.0ba936bb.js.map": "/ship-tracking-system/static/js/main.0ba936bb.js.map",
+    "main.197f93b8.css.map": "/ship-tracking-system/static/css/main.197f93b8.css.map",
+    "main.3002d1e7.js.map": "/ship-tracking-system/static/js/main.3002d1e7.js.map",
     "453.b726ad09.chunk.js.map": "/ship-tracking-system/static/js/453.b726ad09.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.54dbff1c.css",
-    "static/js/main.0ba936bb.js"
+    "static/css/main.197f93b8.css",
+    "static/js/main.3002d1e7.js"
   ]
 }
