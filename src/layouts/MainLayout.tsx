@@ -260,7 +260,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             className: 'trigger',
             onClick: () => setCollapsed(!collapsed),
           })}
-          <div className="company-title">中交润杨（山东）国际物流有限公司</div>
+          {/*<div className="company-title">中交润杨（山东）国际物流有限公司</div>*/}
           <div className="header-right">
             <Tooltip title="帮助">
               <span className="header-icon">

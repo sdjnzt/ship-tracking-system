@@ -23,80 +23,280 @@ export interface ShipData {
 export const mockShips: ShipData[] = [
   {
     id: 'ship-001',
-    name: '润杨物流-001',
+    name: '远洋号',
     type: '集装箱船',
-    position: { longitude: 122.25, latitude: 37.45 },
+    position: { longitude: 122.5, latitude: 31.0 },
     speed: 18.5,
-    direction: 135,
+    direction: 45,
     destination: '青岛港',
-    estimatedArrival: '2025-06-30T14:00:00',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
     status: 'normal',
     cargoInfo: {
       type: '电子产品',
-      weight: 8500,
-      containers: 120
+      weight: 15000,
+      containers: 1200
     }
   },
   {
     id: 'ship-002',
-    name: '润杨物流-002',
-    type: '散货船',
-    position: { longitude: 122.56, latitude: 37.78 },
+    name: '海洋之星',
+    type: '油轮',
+    position: { longitude: 119.8, latitude: 35.9 },
     speed: 15.2,
-    direction: 90,
+    direction: 180,
     destination: '上海港',
-    estimatedArrival: '2025-07-02T08:30:00',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 36).toISOString(),
     status: 'normal',
     cargoInfo: {
-      type: '矿石',
-      weight: 25000
+      type: '原油',
+      weight: 120000
     }
   },
   {
     id: 'ship-003',
-    name: '润杨物流-003',
-    type: '集装箱船',
-    position: { longitude: 123.12, latitude: 38.05 },
-    speed: 0,
-    direction: 0,
-    destination: '济宁港',
-    estimatedArrival: '2025-06-28T10:15:00',
+    name: '蓝鲸号',
+    type: '散货船',
+    position: { longitude: 121.8, latitude: 30.9 },
+    speed: 12.8,
+    direction: 210,
+    destination: '深圳港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 48).toISOString(),
     status: 'warning',
     cargoInfo: {
-      type: '机械设备',
-      weight: 12000,
-      containers: 85
+      type: '铁矿石',
+      weight: 85000
     }
   },
   {
     id: 'ship-004',
-    name: '润杨物流-004',
-    type: '油轮',
-    position: { longitude: 124.35, latitude: 38.72 },
-    speed: 12.8,
-    direction: 225,
-    destination: '大连港',
-    estimatedArrival: '2025-07-05T18:45:00',
+    name: '东方明珠',
+    type: '集装箱船',
+    position: { longitude: 113.8, latitude: 22.2 },
+    speed: 17.5,
+    direction: 15,
+    destination: '宁波港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 30).toISOString(),
     status: 'normal',
     cargoInfo: {
-      type: '石油',
-      weight: 35000
+      type: '服装',
+      weight: 12000,
+      containers: 950
     }
   },
   {
     id: 'ship-005',
-    name: '润杨物流-005',
+    name: '海上巨人',
     type: '集装箱船',
-    position: { longitude: 121.89, latitude: 37.21 },
-    speed: 5.3,
-    direction: 315,
-    destination: '烟台港',
-    estimatedArrival: '2025-06-29T06:20:00',
+    position: { longitude: 121.3, latitude: 29.5 },
+    speed: 19.2,
+    direction: 225,
+    destination: '广州港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 40).toISOString(),
+    status: 'normal',
+    cargoInfo: {
+      type: '机械设备',
+      weight: 18000,
+      containers: 1500
+    }
+  },
+  {
+    id: 'ship-006',
+    name: '南海勇士',
+    type: '油轮',
+    position: { longitude: 113.5, latitude: 22.8 },
+    speed: 14.8,
+    direction: 0,
+    destination: '天津港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 72).toISOString(),
     status: 'danger',
     cargoInfo: {
-      type: '冷冻食品',
-      weight: 9800,
-      containers: 110
+      type: '液化天然气',
+      weight: 95000
+    }
+  },
+  {
+    id: 'ship-007',
+    name: '北方之星',
+    type: '散货船',
+    position: { longitude: 118.1, latitude: 38.9 },
+    speed: 13.5,
+    direction: 135,
+    destination: '厦门港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 55).toISOString(),
+    status: 'normal',
+    cargoInfo: {
+      type: '煤炭',
+      weight: 70000
+    }
+  },
+  {
+    id: 'ship-008',
+    name: '龙腾号',
+    type: '集装箱船',
+    position: { longitude: 121.9, latitude: 38.7 },
+    speed: 18.0,
+    direction: 180,
+    destination: '上海港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 28).toISOString(),
+    status: 'warning',
+    cargoInfo: {
+      type: '汽车零部件',
+      weight: 14000,
+      containers: 1100
+    }
+  },
+  {
+    id: 'ship-009',
+    name: '和平使者',
+    type: '滚装船',
+    position: { longitude: 128.8, latitude: 35.0 },
+    speed: 16.5,
+    direction: 270,
+    destination: '大连港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 32).toISOString(),
+    status: 'normal',
+    cargoInfo: {
+      type: '汽车',
+      weight: 25000
+    }
+  },
+  {
+    id: 'ship-010',
+    name: '东方之光',
+    type: '集装箱船',
+    position: { longitude: 139.5, latitude: 35.5 },
+    speed: 19.8,
+    direction: 270,
+    destination: '上海港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 45).toISOString(),
+    status: 'normal',
+    cargoInfo: {
+      type: '电子产品',
+      weight: 16000,
+      containers: 1300
+    }
+  },
+  {
+    id: 'ship-011',
+    name: '齐鲁号',
+    type: '集装箱船',
+    position: { longitude: 120.3, latitude: 36.1 },
+    speed: 16.8,
+    direction: 90,
+    destination: '威海港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 12).toISOString(),
+    status: 'normal',
+    cargoInfo: {
+      type: '机械设备',
+      weight: 13500,
+      containers: 980
+    }
+  },
+  {
+    id: 'ship-012',
+    name: '泰山号',
+    type: '散货船',
+    position: { longitude: 121.4, latitude: 36.9 },
+    speed: 14.2,
+    direction: 215,
+    destination: '日照港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 18).toISOString(),
+    status: 'normal',
+    cargoInfo: {
+      type: '煤炭',
+      weight: 65000
+    }
+  },
+  {
+    id: 'ship-013',
+    name: '黄海明珠',
+    type: '油轮',
+    position: { longitude: 119.5, latitude: 35.4 },
+    speed: 13.8,
+    direction: 45,
+    destination: '烟台港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
+    status: 'warning',
+    cargoInfo: {
+      type: '原油',
+      weight: 110000
+    }
+  },
+  {
+    id: 'ship-014',
+    name: '鲁能号',
+    type: '集装箱船',
+    position: { longitude: 122.1, latitude: 37.5 },
+    speed: 17.6,
+    direction: 270,
+    destination: '青岛港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 8).toISOString(),
+    status: 'normal',
+    cargoInfo: {
+      type: '电子产品',
+      weight: 14200,
+      containers: 1050
+    }
+  },
+  {
+    id: 'ship-015',
+    name: '渤海之星',
+    type: '滚装船',
+    position: { longitude: 120.7, latitude: 37.8 },
+    speed: 15.5,
+    direction: 180,
+    destination: '威海港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString(),
+    status: 'normal',
+    cargoInfo: {
+      type: '汽车',
+      weight: 18000
+    }
+  },
+  {
+    id: 'ship-016',
+    name: '胶东之光',
+    type: '集装箱船',
+    position: { longitude: 121.0, latitude: 36.5 },
+    speed: 18.2,
+    direction: 135,
+    destination: '烟台港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString(),
+    status: 'normal',
+    cargoInfo: {
+      type: '服装',
+      weight: 9500,
+      containers: 780
+    }
+  },
+  {
+    id: 'ship-017',
+    name: '海洋卫士',
+    type: '油轮',
+    position: { longitude: 119.2, latitude: 35.0 },
+    speed: 12.5,
+    direction: 0,
+    destination: '日照港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 36).toISOString(),
+    status: 'danger',
+    cargoInfo: {
+      type: '液化天然气',
+      weight: 85000
+    }
+  },
+  {
+    id: 'ship-018',
+    name: '蓬莱号',
+    type: '散货船',
+    position: { longitude: 120.8, latitude: 37.1 },
+    speed: 14.0,
+    direction: 60,
+    destination: '烟台港',
+    estimatedArrival: new Date(Date.now() + 1000 * 60 * 60 * 15).toISOString(),
+    status: 'warning',
+    cargoInfo: {
+      type: '铁矿石',
+      weight: 72000
     }
   }
 ];
@@ -185,6 +385,27 @@ export const mockWeatherData: WeatherData[] = [
     windDirection: 80,
     temperature: 24,
     waveHeight: 0.7
+  },
+  {
+    position: { longitude: 120.5, latitude: 36.2 },
+    windSpeed: 14,
+    windDirection: 75,
+    temperature: 23.5,
+    waveHeight: 1.1
+  },
+  {
+    position: { longitude: 121.0, latitude: 37.0 },
+    windSpeed: 16,
+    windDirection: 85,
+    temperature: 22.5,
+    waveHeight: 1.3
+  },
+  {
+    position: { longitude: 119.5, latitude: 35.5 },
+    windSpeed: 12,
+    windDirection: 70,
+    temperature: 24.0,
+    waveHeight: 0.8
   }
 ];
 
@@ -206,53 +427,153 @@ export interface PortData {
 export const mockPorts: PortData[] = [
   {
     id: 'port-001',
-    name: '青岛港',
-    position: { longitude: 120.316, latitude: 36.088 },
+    name: '上海港',
     country: '中国',
-    capacity: 200,
-    currentOccupancy: 145,
-    ships: ['ship-001'],
-    waitingTime: 2.5
+    position: { longitude: 121.4737, latitude: 31.2304 },
+    ships: ['ship-001', 'ship-003'],
+    capacity: 350,
+    currentOccupancy: 280,
+    waitingTime: 4.5
   },
   {
     id: 'port-002',
-    name: '上海港',
-    position: { longitude: 121.499, latitude: 31.238 },
+    name: '青岛港',
     country: '中国',
-    capacity: 350,
-    currentOccupancy: 310,
-    ships: ['ship-002'],
-    waitingTime: 5.2
-  },
-  {
-    id: 'port-003',
-    name: '济宁港',
-    position: { longitude: 116.601, latitude: 35.414 },
-    country: '中国',
-    capacity: 80,
-    currentOccupancy: 45,
-    ships: ['ship-003'],
-    waitingTime: 1.0
-  },
-  {
-    id: 'port-004',
-    name: '大连港',
-    position: { longitude: 121.628, latitude: 38.922 },
-    country: '中国',
-    capacity: 180,
-    currentOccupancy: 120,
-    ships: ['ship-004'],
+    position: { longitude: 120.3162, latitude: 36.0839 },
+    ships: ['ship-002', 'ship-011', 'ship-014'],
+    capacity: 280,
+    currentOccupancy: 210,
     waitingTime: 3.5
   },
   {
-    id: 'port-005',
-    name: '烟台港',
-    position: { longitude: 121.391, latitude: 37.538 },
+    id: 'port-003',
+    name: '深圳港',
     country: '中国',
-    capacity: 150,
-    currentOccupancy: 95,
+    position: { longitude: 114.0579, latitude: 22.5431 },
+    ships: ['ship-004'],
+    capacity: 320,
+    currentOccupancy: 260,
+    waitingTime: 3.8
+  },
+  {
+    id: 'port-004',
+    name: '宁波港',
+    country: '中国',
+    position: { longitude: 121.5504, latitude: 29.8683 },
     ships: ['ship-005'],
+    capacity: 280,
+    currentOccupancy: 220,
+    waitingTime: 3.2
+  },
+  {
+    id: 'port-005',
+    name: '广州港',
+    country: '中国',
+    position: { longitude: 113.2644, latitude: 23.1291 },
+    ships: ['ship-006'],
+    capacity: 250,
+    currentOccupancy: 190,
+    waitingTime: 2.8
+  },
+  {
+    id: 'port-006',
+    name: '天津港',
+    country: '中国',
+    position: { longitude: 117.7912, latitude: 39.0042 },
+    ships: ['ship-007'],
+    capacity: 230,
+    currentOccupancy: 180,
+    waitingTime: 3.0
+  },
+  {
+    id: 'port-007',
+    name: '厦门港',
+    country: '中国',
+    position: { longitude: 118.0894, latitude: 24.4798 },
+    ships: [],
+    capacity: 180,
+    currentOccupancy: 120,
     waitingTime: 2.0
+  },
+  {
+    id: 'port-008',
+    name: '大连港',
+    country: '中国',
+    position: { longitude: 121.6147, latitude: 38.9140 },
+    ships: ['ship-008'],
+    capacity: 200,
+    currentOccupancy: 150,
+    waitingTime: 2.5
+  },
+  {
+    id: 'port-009',
+    name: '釜山港',
+    country: '韩国',
+    position: { longitude: 129.0403, latitude: 35.1142 },
+    ships: ['ship-009'],
+    capacity: 300,
+    currentOccupancy: 240,
+    waitingTime: 3.5
+  },
+  {
+    id: 'port-010',
+    name: '东京港',
+    country: '日本',
+    position: { longitude: 139.7690, latitude: 35.6804 },
+    ships: ['ship-010'],
+    capacity: 280,
+    currentOccupancy: 220,
+    waitingTime: 3.2
+  },
+  {
+    id: 'port-011',
+    name: '烟台港',
+    country: '中国',
+    position: { longitude: 121.3913, latitude: 37.5382 },
+    ships: ['ship-013', 'ship-016', 'ship-018'],
+    capacity: 180,
+    currentOccupancy: 135,
+    waitingTime: 2.8
+  },
+  {
+    id: 'port-012',
+    name: '威海港',
+    country: '中国',
+    position: { longitude: 122.1193, latitude: 37.5129 },
+    ships: ['ship-015'],
+    capacity: 120,
+    currentOccupancy: 85,
+    waitingTime: 1.5
+  },
+  {
+    id: 'port-013',
+    name: '日照港',
+    country: '中国',
+    position: { longitude: 119.5269, latitude: 35.4162 },
+    ships: ['ship-012', 'ship-017'],
+    capacity: 150,
+    currentOccupancy: 110,
+    waitingTime: 2.2
+  },
+  {
+    id: 'port-014',
+    name: '龙口港',
+    country: '中国',
+    position: { longitude: 120.4782, latitude: 37.6431 },
+    ships: [],
+    capacity: 100,
+    currentOccupancy: 65,
+    waitingTime: 1.2
+  },
+  {
+    id: 'port-015',
+    name: '滨州港',
+    country: '中国',
+    position: { longitude: 118.0165, latitude: 37.9813 },
+    ships: [],
+    capacity: 90,
+    currentOccupancy: 45,
+    waitingTime: 1.0
   }
 ];
 
@@ -699,118 +1020,166 @@ export const mockAnomalies: AnomalyEvent[] = [
     timestamp: '2025-06-25T05:10:32',
     description: '航线前方将有7级大风，建议调整航线',
     status: 'detected'
+  },
+  {
+    id: 'anomaly-005',
+    type: 'route_deviation',
+    severity: 'low',
+    shipId: 'ship-011',
+    position: { longitude: 120.85, latitude: 36.65 },
+    timestamp: '2025-06-25T15:22:10',
+    description: '船舶偏离计划航线3海里',
+    status: 'detected'
+  },
+  {
+    id: 'anomaly-006',
+    type: 'weather_alert',
+    severity: 'high',
+    shipId: 'ship-013',
+    position: { longitude: 120.55, latitude: 36.85 },
+    timestamp: '2025-06-25T18:05:45',
+    description: '前方海域有8级大风，建议紧急调整航线',
+    status: 'investigating'
+  },
+  {
+    id: 'anomaly-007',
+    type: 'mechanical_failure',
+    severity: 'medium',
+    shipId: 'ship-018',
+    position: { longitude: 120.85, latitude: 37.15 },
+    timestamp: '2025-06-25T14:38:22',
+    description: '辅助发动机故障，船舶减速行驶',
+    status: 'investigating'
   }
 ];
 
-// 模拟航线规划数据
-export interface RoutePlanData {
-  id: string;
-  shipId: string;
-  originPort: string;
-  destinationPort: string;
-  departureTime: string;
-  estimatedArrival: string;
-  waypoints: {
-    position: {
-      longitude: number;
-      latitude: number;
-    };
-    estimatedPassTime: string;
-    status: 'passed' | 'upcoming' | 'current';
-  }[];
-  distance: number; // 海里
-  fuelConsumption: number; // 吨
-  weatherRisks: {
-    position: {
-      longitude: number;
-      latitude: number;
-    };
-    type: 'storm' | 'high_waves' | 'fog' | 'ice';
-    severity: 'low' | 'medium' | 'high';
-    estimatedTime: string;
-  }[];
-}
-
-export const mockRoutes: RoutePlanData[] = [
+// 修改mockRoutes数据结构，使其符合RouteData类型
+export const mockRoutes = [
   {
     id: 'route-001',
     shipId: 'ship-001',
-    originPort: '深圳港',
-    destinationPort: '青岛港',
-    departureTime: '2025-06-20T15:45:00',
-    estimatedArrival: '2025-06-30T14:00:00',
     waypoints: [
       {
         position: { longitude: 114.26, latitude: 22.53 },
-        estimatedPassTime: '2025-06-20T15:45:00',
-        status: 'passed'
+        status: 'passed' as 'passed'
       },
       {
         position: { longitude: 118.14, latitude: 28.93 },
-        estimatedPassTime: '2025-06-23T10:30:00',
-        status: 'passed'
+        status: 'passed' as 'passed'
       },
       {
         position: { longitude: 122.25, latitude: 37.45 },
-        estimatedPassTime: '2025-06-25T08:15:00',
-        status: 'current'
+        status: 'current' as 'current'
       },
       {
         position: { longitude: 120.316, latitude: 36.088 },
-        estimatedPassTime: '2025-06-30T14:00:00',
-        status: 'upcoming'
+        status: 'upcoming' as 'upcoming'
       }
     ],
-    distance: 1250,
-    fuelConsumption: 125,
-    weatherRisks: [
-      {
-        position: { longitude: 122.8, latitude: 37.9 },
-        type: 'storm',
-        severity: 'medium',
-        estimatedTime: '2025-06-26T12:00:00'
-      }
-    ]
+    color: '#1890ff',
+    width: 3,
+    type: 'fastest' as 'fastest'
   },
   {
     id: 'route-002',
     shipId: 'ship-005',
-    originPort: '大连港',
-    destinationPort: '烟台港',
-    departureTime: '2025-06-18T16:30:00',
-    estimatedArrival: '2025-06-29T06:20:00',
     waypoints: [
       {
         position: { longitude: 121.628, latitude: 38.922 },
-        estimatedPassTime: '2025-06-18T16:30:00',
-        status: 'passed'
+        status: 'passed' as 'passed'
       },
       {
         position: { longitude: 122.15, latitude: 38.35 },
-        estimatedPassTime: '2025-06-22T11:45:00',
-        status: 'passed'
+        status: 'passed' as 'passed'
       },
       {
         position: { longitude: 121.89, latitude: 37.21 },
-        estimatedPassTime: '2025-06-25T18:30:00',
-        status: 'current'
+        status: 'current' as 'current'
       },
       {
         position: { longitude: 121.391, latitude: 37.538 },
-        estimatedPassTime: '2025-06-29T06:20:00',
-        status: 'upcoming'
+        status: 'upcoming' as 'upcoming'
       }
     ],
-    distance: 380,
-    fuelConsumption: 42,
-    weatherRisks: [
+    color: '#52c41a',
+    width: 3,
+    type: 'safest' as 'safest'
+  },
+  // 添加山东地区的航线
+  {
+    id: 'route-003',
+    shipId: 'ship-011',
+    waypoints: [
       {
-        position: { longitude: 121.7, latitude: 37.4 },
-        type: 'fog',
-        severity: 'high',
-        estimatedTime: '2025-06-27T05:00:00'
+        position: { longitude: 120.316, latitude: 36.084 },
+        status: 'passed' as 'passed'
+      },
+      {
+        position: { longitude: 120.8, latitude: 36.6 },
+        status: 'current' as 'current'
+      },
+      {
+        position: { longitude: 121.5, latitude: 37.1 },
+        status: 'upcoming' as 'upcoming'
+      },
+      {
+        position: { longitude: 122.119, latitude: 37.513 },
+        status: 'upcoming' as 'upcoming'
       }
-    ]
+    ],
+    color: '#722ed1',
+    width: 3,
+    type: 'economical' as 'economical'
+  },
+  {
+    id: 'route-004',
+    shipId: 'ship-013',
+    waypoints: [
+      {
+        position: { longitude: 119.527, latitude: 35.416 },
+        status: 'passed' as 'passed'
+      },
+      {
+        position: { longitude: 119.8, latitude: 36.0 },
+        status: 'passed' as 'passed'
+      },
+      {
+        position: { longitude: 120.5, latitude: 36.8 },
+        status: 'current' as 'current'
+      },
+      {
+        position: { longitude: 121.391, latitude: 37.538 },
+        status: 'upcoming' as 'upcoming'
+      }
+    ],
+    color: '#fa8c16',
+    width: 3,
+    type: 'fastest' as 'fastest'
+  },
+  {
+    id: 'route-005',
+    shipId: 'ship-016',
+    waypoints: [
+      {
+        position: { longitude: 120.316, latitude: 36.084 },
+        status: 'passed' as 'passed'
+      },
+      {
+        position: { longitude: 120.7, latitude: 36.5 },
+        status: 'current' as 'current'
+      },
+      {
+        position: { longitude: 121.0, latitude: 37.0 },
+        status: 'upcoming' as 'upcoming'
+      },
+      {
+        position: { longitude: 121.391, latitude: 37.538 },
+        status: 'upcoming' as 'upcoming'
+      }
+    ],
+    color: '#13c2c2',
+    width: 3,
+    type: 'economical' as 'economical'
   }
 ];
 
@@ -1178,5 +1547,81 @@ export const mockLoginHistory: LoginHistory[] = [
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     status: 'success',
     location: '青岛市市南区'
+  }
+];
+
+// 修改weatherMarkers数据结构，使其符合WeatherMarker类型
+export const weatherMarkers = [
+  {
+    id: 'weather-001',
+    position: {
+      longitude: 122.8,
+      latitude: 37.9
+    },
+    type: 'storm' as 'storm',
+    severity: 'medium' as 'medium'
+  },
+  {
+    id: 'weather-002',
+    position: {
+      longitude: 121.7,
+      latitude: 37.4
+    },
+    type: 'fog' as 'fog',
+    severity: 'high' as 'high'
+  },
+  {
+    id: 'weather-003',
+    position: {
+      longitude: 123.2,
+      latitude: 38.1
+    },
+    type: 'mechanical_failure' as 'mechanical_failure',
+    severity: 'high' as 'high'
+  },
+  {
+    id: 'weather-004',
+    position: {
+      longitude: 122.3,
+      latitude: 37.5
+    },
+    type: 'route_deviation' as 'route_deviation',
+    severity: 'medium' as 'medium'
+  },
+  {
+    id: 'weather-005',
+    position: {
+      longitude: 120.8,
+      latitude: 36.7
+    },
+    type: 'high_waves' as 'high_waves',
+    severity: 'medium' as 'medium'
+  },
+  {
+    id: 'weather-006',
+    position: {
+      longitude: 119.8,
+      latitude: 35.8
+    },
+    type: 'storm' as 'storm',
+    severity: 'high' as 'high'
+  },
+  {
+    id: 'weather-007',
+    position: {
+      longitude: 121.2,
+      latitude: 37.3
+    },
+    type: 'fog' as 'fog',
+    severity: 'medium' as 'medium'
+  },
+  {
+    id: 'weather-008',
+    position: {
+      longitude: 122.5,
+      latitude: 37.6
+    },
+    type: 'ice' as 'ice',
+    severity: 'low' as 'low'
   }
 ]; 

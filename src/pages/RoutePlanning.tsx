@@ -1,13 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Typography, Row, Col, Select, Button, Descriptions, Steps, Empty, Spin, Divider, Space, message, Radio, Tooltip } from 'antd';
 import { EnvironmentOutlined, SwapOutlined, AreaChartOutlined, ClockCircleOutlined, ThunderboltOutlined, SafetyOutlined, InfoCircleOutlined, RocketOutlined } from '@ant-design/icons';
-import AMapComponent from '../components/AMapComponent';
-import { mockShips, mockPorts, RoutePlanData } from '../data/mockData';
+import RealMapComponent from '../components/RealMapComponent';
+import { mockShips, mockPorts } from '../data/mockData';
 import '../styles/RoutePlanning.css';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 const { Step } = Steps;
+
+// 定义RoutePlanData接口，替代从mockData中导入
+interface RoutePlanData {
+  id: string;
+  shipId: string;
+  originPort: string;
+  destinationPort: string;
+  departureTime: string;
+  estimatedArrival: string;
+  waypoints: {
+    position: {
+      longitude: number;
+      latitude: number;
+    };
+    estimatedPassTime: string;
+    status: 'passed' | 'upcoming' | 'current';
+  }[];
+  distance: number; // 海里
+  fuelConsumption: number; // 吨
+  weatherRisks: {
+    position: {
+      longitude: number;
+      latitude: number;
+    };
+    type: 'storm' | 'high_waves' | 'fog' | 'ice';
+    severity: 'low' | 'medium' | 'high';
+    estimatedTime: string;
+  }[];
+}
 
 const RoutePlanning: React.FC = () => {
   const [origin, setOrigin] = useState<string>('port-001');
@@ -215,7 +244,14 @@ const RoutePlanning: React.FC = () => {
   const visualRoutes = routeInfo ? [{
     id: routeInfo.id,
     shipId: routeInfo.shipId,
-    waypoints: routeInfo.waypoints.map(wp => ({
+    waypoints: routeInfo.waypoints.map((wp: {
+      position: {
+        longitude: number;
+        latitude: number;
+      };
+      status: 'passed' | 'upcoming' | 'current';
+      estimatedPassTime: string;
+    }) => ({
       position: wp.position,
       status: wp.status
     })),
@@ -226,7 +262,15 @@ const RoutePlanning: React.FC = () => {
   }] : [];
 
   // 创建风险点标记
-  const weatherMarkers = routeInfo ? routeInfo.weatherRisks.map((risk, index) => ({
+  const weatherMarkers = routeInfo ? routeInfo.weatherRisks.map((risk: {
+    position: {
+      longitude: number;
+      latitude: number;
+    };
+    type: 'storm' | 'high_waves' | 'fog' | 'ice';
+    severity: 'low' | 'medium' | 'high';
+    estimatedTime: string;
+  }, index: number) => ({
     id: `risk-${index}`,
     position: risk.position,
     type: risk.type,
@@ -375,7 +419,14 @@ const RoutePlanning: React.FC = () => {
                     size="small"
                     className="route-steps"
                     current={0}
-                    items={routeInfo.waypoints.map((wp, idx) => ({
+                    items={routeInfo.waypoints.map((wp: {
+                      position: {
+                        longitude: number;
+                        latitude: number;
+                      };
+                      estimatedPassTime: string;
+                      status: 'passed' | 'upcoming' | 'current';
+                    }, idx: number) => ({
                       title: idx === 0 ? routeInfo.originPort : 
                             idx === routeInfo.waypoints.length - 1 ? routeInfo.destinationPort : 
                             `航点 ${idx}`,
@@ -391,7 +442,15 @@ const RoutePlanning: React.FC = () => {
                         <InfoCircleOutlined /> 航线风险
                       </Divider>
                       <div className="weather-risks">
-                        {routeInfo.weatherRisks.map((risk, idx) => (
+                        {routeInfo.weatherRisks.map((risk: {
+                          position: {
+                            longitude: number;
+                            latitude: number;
+                          };
+                          type: 'storm' | 'high_waves' | 'fog' | 'ice';
+                          severity: 'low' | 'medium' | 'high';
+                          estimatedTime: string;
+                        }, idx: number) => (
                           <div key={idx} className={`weather-risk-item ${risk.severity}`}>
                             <span className="risk-type">
                               {risk.type === 'storm' ? '风暴' : 
@@ -419,8 +478,8 @@ const RoutePlanning: React.FC = () => {
         <Divider orientation="left">航线地图预览</Divider>
         
         <div className={`route-map-container ${routeInfo ? 'has-route' : ''}`}>
-          {/* 使用AMapComponent来显示地图 */}
-          <AMapComponent 
+          {/* 使用RealMapComponent来显示地图 */}
+          <RealMapComponent 
             ships={mapShips} 
             ports={mockPorts} 
             onShipClick={(ship) => console.log('Ship clicked:', ship)}
@@ -428,6 +487,7 @@ const RoutePlanning: React.FC = () => {
             weatherMarkers={weatherMarkers}
             zoomToFit={routeInfo !== null}
             highlightedPorts={highlightedPortIds}
+            mapType="standard"
           />
           
           {!routeInfo && !loading && (

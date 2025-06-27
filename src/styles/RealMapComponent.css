@@ -1,0 +1,494 @@
+.real-map-container {
+  width: 100%;
+  height: 100%;
+  min-height: 600px; /* 确保有最小高度 */
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
+  position: relative;
+  border: 1px solid rgba(24, 144, 255, 0.2);
+}
+
+.real-map {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #f0f2f5;
+}
+
+/* 确保地图容器在父元素中填满空间 */
+.map-container, .map-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Custom styling for leaflet controls */
+.leaflet-control-zoom {
+  border: none !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+  background-color: white !important;
+  color: #333 !important;
+  border-radius: 4px !important;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+  font-size: 18px !important;
+}
+
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+  background-color: #f0f0f0 !important;
+  color: #1890ff !important;
+}
+
+/* Popup styling */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.2);
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  padding: 0;
+  width: 250px !important;
+}
+
+.popup-content {
+  padding: 15px;
+}
+
+.popup-content h4 {
+  margin: 0 0 10px 0;
+  color: #1890ff;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 16px;
+}
+
+.popup-content h5 {
+  margin: 12px 0 8px 0;
+  color: #333;
+  font-size: 14px;
+  border-top: 1px dashed #f0f0f0;
+  padding-top: 8px;
+}
+
+.popup-content p {
+  margin: 6px 0;
+  font-size: 13px;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+}
+
+.leaflet-popup-tip {
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* Custom marker styling */
+.ship-icon-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.ship-icon-marker:hover {
+  transform: scale(1.2);
+  z-index: 1000 !important;
+}
+
+.ship-icon-marker.warning {
+  filter: drop-shadow(0 0 5px rgba(250, 173, 20, 0.8));
+  animation: pulse-warning 2s infinite;
+}
+
+.ship-icon-marker.danger {
+  filter: drop-shadow(0 0 5px rgba(255, 77, 79, 0.8));
+  animation: pulse-danger 1s infinite;
+}
+
+.port-icon-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.port-icon-marker.highlighted {
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 5px rgba(255, 77, 79, 0.8));
+  z-index: 900 !important;
+}
+
+.port-icon-marker:hover {
+  transform: scale(1.2);
+}
+
+.weather-icon-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.weather-icon-marker.high {
+  filter: drop-shadow(0 0 8px rgba(255, 77, 79, 0.8));
+  animation: pulse-high 1.5s infinite;
+}
+
+.weather-icon-marker.medium {
+  filter: drop-shadow(0 0 5px rgba(250, 173, 20, 0.8));
+  animation: pulse-medium 2s infinite;
+}
+
+.weather-icon-marker:hover {
+  transform: scale(1.2);
+}
+
+@keyframes pulse-warning {
+  0% { filter: drop-shadow(0 0 3px rgba(250, 173, 20, 0.7)); }
+  50% { filter: drop-shadow(0 0 8px rgba(250, 173, 20, 0.9)); }
+  100% { filter: drop-shadow(0 0 3px rgba(250, 173, 20, 0.7)); }
+}
+
+@keyframes pulse-danger {
+  0% { filter: drop-shadow(0 0 3px rgba(255, 77, 79, 0.7)); }
+  50% { filter: drop-shadow(0 0 10px rgba(255, 77, 79, 0.9)); }
+  100% { filter: drop-shadow(0 0 3px rgba(255, 77, 79, 0.7)); }
+}
+
+@keyframes pulse-high {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pulse-medium {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* 自定义缩放控制 */
+.custom-zoom-control {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  padding: 2px;
+  backdrop-filter: blur(2px);
+}
+
+.zoom-button {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  transition: all 0.2s;
+  border-radius: 2px;
+}
+
+.zoom-button:hover {
+  background-color: rgba(240, 240, 240, 0.7);
+  color: #1890ff;
+}
+
+/* 地图类型控制 */
+.map-type-control {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  display: flex;
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  backdrop-filter: blur(2px);
+}
+
+.map-type-button {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  border-right: 1px solid rgba(240, 240, 240, 0.5);
+}
+
+.map-type-button:last-child {
+  border-right: none;
+}
+
+.map-type-button:hover {
+  background-color: rgba(240, 240, 240, 0.7);
+}
+
+.map-type-button.active {
+  background-color: rgba(24, 144, 255, 0.8);
+  color: white;
+}
+
+/* 船舶图标样式 */
+.ship-icon-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  transition: transform 0.3s ease;
+}
+
+.ship-icon-container:hover {
+  transform: scale(1.2);
+}
+
+.ship-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  z-index: -1;
+}
+
+.ship-pulse.normal {
+  box-shadow: 0 0 0 rgba(82, 196, 26, 0.4);
+  animation: pulse-normal 2s infinite;
+}
+
+.ship-pulse.warning {
+  box-shadow: 0 0 0 rgba(250, 173, 20, 0.4);
+  animation: pulse-warning 2s infinite;
+}
+
+.ship-pulse.danger {
+  box-shadow: 0 0 0 rgba(255, 77, 79, 0.4);
+  animation: pulse-danger 1.5s infinite;
+}
+
+@keyframes pulse-normal {
+  0% {
+    box-shadow: 0 0 0 0 rgba(82, 196, 26, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(82, 196, 26, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(82, 196, 26, 0);
+  }
+}
+
+@keyframes pulse-warning {
+  0% {
+    box-shadow: 0 0 0 0 rgba(250, 173, 20, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(250, 173, 20, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(250, 173, 20, 0);
+  }
+}
+
+@keyframes pulse-danger {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 77, 79, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 79, 0);
+  }
+}
+
+/* 港口图标样式 */
+.port-icon-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  transition: transform 0.3s ease;
+}
+
+.port-icon-container:hover {
+  transform: scale(1.2);
+}
+
+.port-highlight-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 rgba(255, 77, 79, 0.4);
+  animation: pulse-port-highlight 1.5s infinite;
+  z-index: -1;
+}
+
+@keyframes pulse-port-highlight {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 77, 79, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 79, 0);
+  }
+}
+
+/* 天气图标样式 */
+.weather-icon-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  transition: transform 0.3s ease;
+}
+
+.weather-icon-container:hover {
+  transform: scale(1.2);
+}
+
+.weather-pulse {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  z-index: -1;
+}
+
+.weather-pulse.high {
+  box-shadow: 0 0 0 rgba(255, 77, 79, 0.4);
+  animation: pulse-weather-high 1.5s infinite;
+}
+
+.weather-pulse.medium {
+  box-shadow: 0 0 0 rgba(250, 173, 20, 0.4);
+  animation: pulse-weather-medium 2s infinite;
+}
+
+@keyframes pulse-weather-high {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 79, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(255, 77, 79, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 79, 0);
+  }
+}
+
+@keyframes pulse-weather-medium {
+  0% {
+    box-shadow: 0 0 0 0 rgba(250, 173, 20, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(250, 173, 20, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(250, 173, 20, 0);
+  }
+}
+
+/* 地图图例样式 */
+.map-legend {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 120px;
+  border: 1px solid rgba(24, 144, 255, 0.2);
+}
+
+.legend-title {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 10px;
+  color: #1890ff;
+  border-bottom: 1px solid rgba(24, 144, 255, 0.2);
+  padding-bottom: 5px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.legend-item:last-child {
+  margin-bottom: 0;
+}
+
+.legend-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.legend-icon.normal {
+  background-color: #52c41a;
+}
+
+.legend-icon.warning {
+  background-color: #faad14;
+}
+
+.legend-icon.danger {
+  background-color: #ff4d4f;
+}
+
+.legend-icon.port {
+  background-color: #1890ff;
+}
+
+.legend-icon.weather {
+  background-color: #722ed1;
+}
+
+.legend-text {
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+} 

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Table, Input, Select, Button, Tag, Drawer, Typography, Descriptions, Tabs, Empty, Tooltip } from 'antd';
 import { SearchOutlined, InfoCircleOutlined, EnvironmentOutlined, CompassOutlined, BarChartOutlined, 
   FilterOutlined, ReloadOutlined, FullscreenOutlined, SettingOutlined, BellOutlined } from '@ant-design/icons';
-import { mockShips, mockPorts, getShipTrack, ShipData } from '../data/mockData';
-import AMapComponent from '../components/AMapComponent';
+import { mockShips, mockPorts, getShipTrack, ShipData, mockRoutes, weatherMarkers } from '../data/mockData';
+import RealMapComponent from '../components/RealMapComponent';
 import '../styles/ShipTracking.css';
 
 const { Title, Text } = Typography;
@@ -17,11 +17,11 @@ const ShipTracking: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedShip, setSelectedShip] = useState<ShipData | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const [mapMode, setMapMode] = useState<'terrain' | 'satellite' | 'standard'>('terrain');
+  const [mapMode, setMapMode] = useState<'terrain' | 'satellite' | 'standard'>('satellite');
   const [isTracking, setIsTracking] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
-  const [showWeather, setShowWeather] = useState(false);
-  const [showLegend, setShowLegend] = useState(false);
+  const [showWeather, setShowWeather] = useState(true);
+  const [showLegend, setShowLegend] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   // 每2秒更新一次船舶位置
@@ -211,10 +211,15 @@ const ShipTracking: React.FC = () => {
         {/* 左侧地图区域 */}
         <div className="map-container">
           <div className="map-wrapper">
-            <AMapComponent 
+            <RealMapComponent 
               ships={ships}
               ports={mockPorts}
               onShipClick={showShipDetails}
+              mapType={mapMode}
+              weatherMarkers={weatherMarkers}
+              routes={mockRoutes}
+              zoomToFit={false}
+              highlightedPorts={selectedShip ? [mockPorts.find(port => port.name === selectedShip.destination)?.id || ''] : []}
             />
           </div>
           
@@ -222,56 +227,56 @@ const ShipTracking: React.FC = () => {
           <div className="map-controls">
             <div className="control-group map-mode">
               <Tooltip title="标准地图">
-                <Button 
-                  type={mapMode === 'standard' ? 'primary' : 'default'} 
+                <Button
+                  type={mapMode === 'standard' ? 'primary' : 'default'}
                   onClick={() => setMapMode('standard')}
                 >
                   标准
                 </Button>
               </Tooltip>
               <Tooltip title="地形地图">
-                <Button 
-                  type={mapMode === 'terrain' ? 'primary' : 'default'} 
+                <Button
+                  type={mapMode === 'terrain' ? 'primary' : 'default'}
                   onClick={() => setMapMode('terrain')}
                 >
                   地形
                 </Button>
               </Tooltip>
               <Tooltip title="卫星地图">
-                <Button 
-                  type={mapMode === 'satellite' ? 'primary' : 'default'} 
+                <Button
+                  type={mapMode === 'satellite' ? 'primary' : 'default'}
                   onClick={() => setMapMode('satellite')}
                 >
                   卫星
                 </Button>
               </Tooltip>
             </div>
-            
+
             <div className="control-group display-controls">
               <Tooltip title={showLabels ? "隐藏标签" : "显示标签"}>
-                <Button 
-                  icon={<EnvironmentOutlined />} 
+                <Button
+                  icon={<EnvironmentOutlined />}
                   type={showLabels ? 'primary' : 'default'}
                   onClick={() => setShowLabels(!showLabels)}
                 />
               </Tooltip>
               <Tooltip title={showWeather ? "隐藏气象" : "显示气象"}>
-                <Button 
-                  icon={<CloudOutlined />} 
+                <Button
+                  icon={<CloudOutlined />}
                   type={showWeather ? 'primary' : 'default'}
                   onClick={() => setShowWeather(!showWeather)}
                 />
               </Tooltip>
               <Tooltip title={showLegend ? "隐藏图例" : "显示图例"}>
-                <Button 
-                  icon={<BarsOutlined />} 
+                <Button
+                  icon={<BarsOutlined />}
                   type={showLegend ? 'primary' : 'default'}
                   onClick={() => setShowLegend(!showLegend)}
                 />
               </Tooltip>
               <Tooltip title={isTracking ? "暂停跟踪" : "开始跟踪"}>
-                <Button 
-                  icon={isTracking ? <PauseOutlined /> : <PlayCircleOutlined />} 
+                <Button
+                  icon={isTracking ? <PauseOutlined /> : <PlayCircleOutlined />}
                   type={isTracking ? 'primary' : 'default'}
                   onClick={() => setIsTracking(!isTracking)}
                 />
