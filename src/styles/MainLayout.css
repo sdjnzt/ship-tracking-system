@@ -8,7 +8,7 @@
   align-items: center;
   justify-content: center;
   color: #1890ff;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: bold;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin: 0;
@@ -16,6 +16,9 @@
   color: white;
   position: relative;
   overflow: hidden;
+  padding: 0 10px;
+  text-align: center;
+  line-height: 1.2;
 }
 
 .logo::after {

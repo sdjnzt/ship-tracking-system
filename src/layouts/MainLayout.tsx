@@ -243,7 +243,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     <Layout className="main-layout">
       <Sider trigger={null} collapsible collapsed={collapsed} theme="light" width={230}>
         <div className="logo">
-          {!collapsed && <span>船舶物流追踪系统</span>}
+          {!collapsed && <span>中交润杨（山东）国际物流有限公司船舶物流追踪系统</span>}
         </div>
         <Menu
           theme="light"
