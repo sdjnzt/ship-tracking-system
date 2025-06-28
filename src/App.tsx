@@ -35,6 +35,7 @@ function App() {
           <Route path="/user-management" element={<UserManagement />} />
           <Route path="/security" element={<SecuritySettings />} />
           <Route path="/system-settings" element={<SystemSettings />} />
+          <Route path="/ship-details/:shipId" element={<ShipTracking />} />
           {/* 其他路由可在此添加 */}
         </Routes>
       </MainLayout>

@@ -3,7 +3,7 @@ import {
   Card, Typography, Row, Col, Form, Input, Button, Switch, 
   Tabs, Space, Slider, InputNumber, Select, Table, Tag, 
   Tooltip, Divider, Alert, List, Badge, Timeline, Descriptions,
-  Radio, Popconfirm, message
+  Radio, Popconfirm, message, Modal
 } from 'antd';
 import {
   SafetyCertificateOutlined, LockOutlined, EyeOutlined, 
@@ -13,7 +13,7 @@ import {
   ExclamationCircleOutlined, SettingOutlined, SaveOutlined,
   UndoOutlined, InfoCircleOutlined, BellOutlined, TeamOutlined,
   ApiOutlined, CloudServerOutlined, DatabaseOutlined, FireOutlined,
-  ExportOutlined, CodeOutlined
+  ExportOutlined, CodeOutlined, DeleteOutlined
 } from '@ant-design/icons';
 import '../styles/SecuritySettings.css';
 
@@ -223,6 +223,73 @@ const SecuritySettings: React.FC = () => {
     message.success('IP白名单已删除');
   };
 
+  // 处理安全审计日志导出
+  const handleExportLogs = () => {
+    message.success('安全审计日志已导出');
+    
+    // 创建一个导出文件
+    const logData = JSON.stringify(logs, null, 2);
+    const blob = new Blob([logData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `security-logs-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // 处理安全审计日志清空
+  const handleClearLogs = () => {
+    Modal.confirm({
+      title: '确认清空安全日志',
+      content: '此操作将清空所有安全审计日志记录，且不可恢复。确定要继续吗？',
+      okText: '确定',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: () => {
+        setLogs([]);
+        message.success('安全审计日志已清空');
+        
+        // 添加清空日志的记录
+        const newLog: SecurityLog = {
+          id: `log-${Date.now()}`,
+          type: 'setting_change',
+          username: 'admin',
+          ip: '192.168.1.100',
+          timestamp: new Date().toISOString(),
+          details: '清空了安全审计日志',
+          status: 'success'
+        };
+        setLogs([newLog]);
+      }
+    });
+  };
+
+  // 处理安全扫描
+  const handleSecurityScan = () => {
+    setLoading(true);
+    message.loading({ content: '正在进行安全扫描...', key: 'securityScan' });
+    
+    setTimeout(() => {
+      setLoading(false);
+      message.success({ content: '安全扫描完成，未发现异常', key: 'securityScan' });
+      
+      // 添加安全扫描日志
+      const newLog: SecurityLog = {
+        id: `log-${Date.now()}`,
+        type: 'security_alert',
+        username: 'admin',
+        ip: '192.168.1.100',
+        timestamp: new Date().toISOString(),
+        details: '执行了系统安全扫描',
+        status: 'success'
+      };
+      setLogs([newLog, ...logs]);
+    }, 2000);
+  };
+
   // 安全日志表格列定义
   const logColumns = [
     {
@@ -248,7 +315,11 @@ const SecuritySettings: React.FC = () => {
           security_alert: { text: '安全警报', icon: <ExclamationCircleOutlined />, color: 'red' },
         };
         const { text, icon, color } = typeMap[type] || { text: type, icon: <InfoCircleOutlined />, color: 'default' };
-        return <Tag color={color} icon={icon}>{text}</Tag>;
+        return (
+          <Tag color={color} icon={icon}>
+            {text}
+          </Tag>
+        );
       },
       filters: [
         { text: '登录', value: 'login' },
@@ -258,91 +329,44 @@ const SecuritySettings: React.FC = () => {
         { text: '权限修改', value: 'permission_change' },
         { text: '安全警报', value: 'security_alert' },
       ],
-      onFilter: (value: any, record: SecurityLog) => record.type === value,
-      width: 120,
+      onFilter: (value: React.Key | boolean, record: SecurityLog) => record.type === value,
     },
     {
       title: '用户',
       dataIndex: 'username',
       key: 'username',
-      width: 120,
     },
     {
       title: 'IP地址',
       dataIndex: 'ip',
       key: 'ip',
-      width: 120,
     },
     {
       title: '详情',
       dataIndex: 'details',
       key: 'details',
-      ellipsis: true,
     },
     {
       title: '状态',
       dataIndex: 'status',
       key: 'status',
       render: (status: string) => {
-        const statusMap: Record<string, { text: string, color: string, icon: React.ReactNode }> = {
-          success: { text: '成功', color: 'success', icon: <CheckCircleOutlined /> },
-          failed: { text: '失败', color: 'error', icon: <CloseCircleOutlined /> },
-          warning: { text: '警告', color: 'warning', icon: <ExclamationCircleOutlined /> },
+        const statusMap: Record<string, { text: string, icon: React.ReactNode, color: string }> = {
+          success: { text: '成功', icon: <CheckCircleOutlined />, color: 'success' },
+          failed: { text: '失败', icon: <CloseCircleOutlined />, color: 'error' },
+          warning: { text: '警告', icon: <ExclamationCircleOutlined />, color: 'warning' },
         };
-        const { text, color, icon } = statusMap[status] || { text: status, color: 'default', icon: <InfoCircleOutlined /> };
-        return <Badge status={color as any} text={text} />;
+        const { text, icon, color } = statusMap[status] || { text: status, icon: <InfoCircleOutlined />, color: 'default' };
+        return (
+          <Badge status={color as any} text={text} />
+        );
       },
       filters: [
         { text: '成功', value: 'success' },
         { text: '失败', value: 'failed' },
         { text: '警告', value: 'warning' },
       ],
-      onFilter: (value: any, record: SecurityLog) => record.status === value,
-      width: 100,
-    },
-  ];
-
-  // IP白名单表格列定义
-  const ipColumns = [
-    {
-      title: 'IP地址/范围',
-      dataIndex: 'ip',
-      key: 'ip',
-    },
-    {
-      title: '描述',
-      dataIndex: 'description',
-      key: 'description',
-      ellipsis: true,
-    },
-    {
-      title: '创建人',
-      dataIndex: 'createdBy',
-      key: 'createdBy',
-    },
-    {
-      title: '创建时间',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (text: string) => new Date(text).toLocaleString(),
-    },
-    {
-      title: '操作',
-      key: 'action',
-      render: (text: string, record: IpWhitelist) => (
-        <Space>
-          <Popconfirm
-            title="确定要删除这个IP白名单吗？"
-            onConfirm={() => handleDeleteIpWhitelist(record.id)}
-            okText="确定"
-            cancelText="取消"
-          >
-            <Button type="text" danger icon={<CloseCircleOutlined />}>
-              删除
-            </Button>
-          </Popconfirm>
-        </Space>
-      ),
+      onFilter: (value: React.Key | boolean, record: SecurityLog) => record.status === value,
     },
   ];
 
@@ -351,32 +375,46 @@ const SecuritySettings: React.FC = () => {
       <div className="page-header">
         <div>
           <Title level={3}><SafetyCertificateOutlined /> 安全设置</Title>
-          <Text type="secondary">管理系统安全策略，保障数据安全和访问控制</Text>
+          <Text type="secondary">管理系统安全策略、访问控制和安全审计</Text>
         </div>
+        
+        <Space size="middle">
+          <Button 
+            icon={<SecurityScanOutlined />} 
+            onClick={handleSecurityScan}
+            loading={loading}
+          >
+            安全扫描
+          </Button>
+          <Button 
+            icon={<SaveOutlined />} 
+            onClick={() => message.success('安全设置已保存')}
+          >
+            保存设置
+          </Button>
+        </Space>
       </div>
 
-      <Tabs activeKey={activeTab} onChange={setActiveTab} className="security-tabs" type="card">
+      <Tabs 
+        activeKey={activeTab} 
+        onChange={setActiveTab}
+        className="security-tabs"
+        tabBarGutter={8}
+        type="card"
+      >
         <TabPane tab={<span><LockOutlined /> 密码策略</span>} key="password" />
-        <TabPane tab={<span><SecurityScanOutlined /> 登录安全</span>} key="login" />
-        <TabPane tab={<span><GlobalOutlined /> 访问控制</span>} key="access" />
-        <TabPane tab={<span><HistoryOutlined /> 安全日志</span>} key="logs" />
+        <TabPane tab={<span><UserOutlined /> 登录安全</span>} key="login" />
+        <TabPane tab={<span><GlobalOutlined /> IP白名单</span>} key="ip" />
+        <TabPane tab={<span><HistoryOutlined /> 安全审计</span>} key="audit" />
       </Tabs>
 
       {activeTab === 'password' && (
-        <Card className="settings-card">
-          <Alert
-            message="密码策略说明"
-            description="密码策略用于规范用户密码的复杂度和安全性，包括密码长度、组成要求、过期策略等。合理的密码策略可以有效防止密码被破解。"
-            type="info"
-            showIcon
-            style={{ marginBottom: 24 }}
-          />
-          
+        <Card title="密码策略设置" className="security-card">
           <Form
             form={passwordForm}
             layout="vertical"
-            onFinish={handlePasswordFormSubmit}
             initialValues={passwordSettings}
+            onFinish={handlePasswordFormSubmit}
           >
             <Row gutter={24}>
               <Col span={12}>
@@ -385,17 +423,7 @@ const SecuritySettings: React.FC = () => {
                   label="密码最小长度"
                   rules={[{ required: true, message: '请输入密码最小长度' }]}
                 >
-                  <Slider
-                    min={6}
-                    max={20}
-                    marks={{
-                      6: '6',
-                      8: '8',
-                      12: '12',
-                      16: '16',
-                      20: '20'
-                    }}
-                  />
+                  <InputNumber min={6} max={20} style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
               <Col span={12}>
@@ -404,95 +432,81 @@ const SecuritySettings: React.FC = () => {
                   label="密码过期天数"
                   rules={[{ required: true, message: '请输入密码过期天数' }]}
                 >
-                  <Slider
-                    min={0}
-                    max={180}
-                    marks={{
-                      0: '永不',
-                      30: '30天',
-                      90: '90天',
-                      180: '180天'
-                    }}
-                  />
+                  <InputNumber min={0} max={365} style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
             </Row>
-
             <Row gutter={24}>
               <Col span={12}>
                 <Form.Item
                   name="preventReuseCount"
-                  label="禁止重复使用最近密码数量"
-                  rules={[{ required: true, message: '请输入数量' }]}
+                  label="禁止重复使用密码次数"
+                  rules={[{ required: true, message: '请输入禁止重复使用密码次数' }]}
                 >
-                  <Select>
-                    <Option value={0}>不限制</Option>
-                    <Option value={3}>3个</Option>
-                    <Option value={5}>5个</Option>
-                    <Option value={10}>10个</Option>
-                  </Select>
+                  <InputNumber min={0} max={20} style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
             </Row>
-
-            <Divider orientation="left">密码复杂度要求</Divider>
-
+            <Divider />
             <Row gutter={24}>
-              <Col span={6}>
+              <Col span={12}>
                 <Form.Item
                   name="requireUppercase"
                   valuePropName="checked"
-                  label="要求大写字母"
+                  label="必须包含大写字母"
                 >
                   <Switch />
                 </Form.Item>
               </Col>
-              <Col span={6}>
+              <Col span={12}>
                 <Form.Item
                   name="requireLowercase"
                   valuePropName="checked"
-                  label="要求小写字母"
-                >
-                  <Switch />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="requireNumbers"
-                  valuePropName="checked"
-                  label="要求数字"
-                >
-                  <Switch />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="requireSpecialChars"
-                  valuePropName="checked"
-                  label="要求特殊字符"
+                  label="必须包含小写字母"
                 >
                   <Switch />
                 </Form.Item>
               </Col>
             </Row>
-
-            <Divider />
-
+            <Row gutter={24}>
+              <Col span={12}>
+                <Form.Item
+                  name="requireNumbers"
+                  valuePropName="checked"
+                  label="必须包含数字"
+                >
+                  <Switch />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="requireSpecialChars"
+                  valuePropName="checked"
+                  label="必须包含特殊字符"
+                >
+                  <Switch />
+                </Form.Item>
+              </Col>
+            </Row>
             <Form.Item>
               <Space>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  icon={<SaveOutlined />}
-                  loading={loading}
-                >
+                <Button type="primary" htmlType="submit" loading={loading}>
                   保存设置
                 </Button>
-                <Button
-                  icon={<UndoOutlined />}
-                  onClick={() => passwordForm.resetFields()}
+                <Button 
+                  onClick={() => {
+                    passwordForm.setFieldsValue({
+                      minLength: 8,
+                      requireUppercase: true,
+                      requireLowercase: true,
+                      requireNumbers: true,
+                      requireSpecialChars: true,
+                      passwordExpiryDays: 90,
+                      preventReuseCount: 5,
+                    });
+                  }}
                 >
-                  重置
+                  恢复默认
                 </Button>
               </Space>
             </Form.Item>
@@ -501,71 +515,47 @@ const SecuritySettings: React.FC = () => {
       )}
 
       {activeTab === 'login' && (
-        <Card className="settings-card">
-          <Alert
-            message="登录安全说明"
-            description="登录安全设置用于规范用户登录行为，包括登录尝试次数限制、会话超时、双因素认证等。这些设置可以有效防止未授权访问和账户劫持。"
-            type="info"
-            showIcon
-            style={{ marginBottom: 24 }}
-          />
-          
+        <Card title="登录安全设置" className="security-card">
           <Form
             form={loginForm}
             layout="vertical"
-            onFinish={handleLoginFormSubmit}
             initialValues={loginSettings}
+            onFinish={handleLoginFormSubmit}
           >
             <Row gutter={24}>
-              <Col span={8}>
+              <Col span={12}>
                 <Form.Item
                   name="maxLoginAttempts"
                   label="最大登录尝试次数"
                   rules={[{ required: true, message: '请输入最大登录尝试次数' }]}
                 >
-                  <Select>
-                    <Option value={3}>3次</Option>
-                    <Option value={5}>5次</Option>
-                    <Option value={10}>10次</Option>
-                    <Option value={0}>不限制</Option>
-                  </Select>
+                  <InputNumber min={1} max={10} style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+              <Col span={12}>
                 <Form.Item
                   name="lockoutDuration"
-                  label="账户锁定时长(分钟)"
+                  label="账户锁定时长（分钟）"
                   rules={[{ required: true, message: '请输入账户锁定时长' }]}
                 >
-                  <Select>
-                    <Option value={15}>15分钟</Option>
-                    <Option value={30}>30分钟</Option>
-                    <Option value={60}>1小时</Option>
-                    <Option value={1440}>24小时</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item
-                  name="sessionTimeout"
-                  label="会话超时时间(分钟)"
-                  rules={[{ required: true, message: '请输入会话超时时间' }]}
-                >
-                  <Select>
-                    <Option value={15}>15分钟</Option>
-                    <Option value={30}>30分钟</Option>
-                    <Option value={60}>1小时</Option>
-                    <Option value={120}>2小时</Option>
-                    <Option value={0}>永不超时</Option>
-                  </Select>
+                  <InputNumber min={1} max={1440} style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
             </Row>
-
-            <Divider orientation="left">登录验证设置</Divider>
-
             <Row gutter={24}>
-              <Col span={8}>
+              <Col span={12}>
+                <Form.Item
+                  name="sessionTimeout"
+                  label="会话超时时间（分钟）"
+                  rules={[{ required: true, message: '请输入会话超时时间' }]}
+                >
+                  <InputNumber min={1} max={1440} style={{ width: '100%' }} />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Divider />
+            <Row gutter={24}>
+              <Col span={12}>
                 <Form.Item
                   name="enableTwoFactor"
                   valuePropName="checked"
@@ -574,16 +564,18 @@ const SecuritySettings: React.FC = () => {
                   <Switch />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+              <Col span={12}>
                 <Form.Item
                   name="requireCaptcha"
                   valuePropName="checked"
-                  label="启用验证码"
+                  label="登录需要验证码"
                 >
                   <Switch />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+            </Row>
+            <Row gutter={24}>
+              <Col span={12}>
                 <Form.Item
                   name="allowMultipleSessions"
                   valuePropName="checked"
@@ -592,39 +584,35 @@ const SecuritySettings: React.FC = () => {
                   <Switch />
                 </Form.Item>
               </Col>
-            </Row>
-
-            <Divider orientation="left">IP限制</Divider>
-
-            <Row gutter={24}>
-              <Col span={24}>
+              <Col span={12}>
                 <Form.Item
                   name="ipRestriction"
                   valuePropName="checked"
-                  label="启用IP访问限制"
+                  label="启用IP限制"
                 >
                   <Switch />
                 </Form.Item>
               </Col>
             </Row>
-
-            <Divider />
-
             <Form.Item>
               <Space>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  icon={<SaveOutlined />}
-                  loading={loading}
-                >
+                <Button type="primary" htmlType="submit" loading={loading}>
                   保存设置
                 </Button>
-                <Button
-                  icon={<UndoOutlined />}
-                  onClick={() => loginForm.resetFields()}
+                <Button 
+                  onClick={() => {
+                    loginForm.setFieldsValue({
+                      maxLoginAttempts: 5,
+                      lockoutDuration: 30,
+                      sessionTimeout: 60,
+                      enableTwoFactor: false,
+                      requireCaptcha: true,
+                      allowMultipleSessions: false,
+                      ipRestriction: false,
+                    });
+                  }}
                 >
-                  重置
+                  恢复默认
                 </Button>
               </Space>
             </Form.Item>
@@ -632,145 +620,130 @@ const SecuritySettings: React.FC = () => {
         </Card>
       )}
 
-      {activeTab === 'access' && (
-        <Row gutter={24}>
-          <Col span={24}>
-            <Card 
-              title={<Space><GlobalOutlined /> IP白名单</Space>} 
-              className="settings-card"
-              extra={
-                <Button 
-                  type="primary" 
-                  onClick={() => ipForm.resetFields()}
-                >
-                  添加IP
-                </Button>
-              }
-            >
-              <Alert
-                message="IP白名单说明"
-                description="IP白名单用于限制只有特定IP地址或IP地址范围的用户可以访问系统。可以使用CIDR表示法（如192.168.1.0/24）来指定IP范围。"
-                type="info"
-                showIcon
-                style={{ marginBottom: 24 }}
-              />
-              
-              <Form
-                form={ipForm}
-                layout="inline"
-                onFinish={handleAddIpWhitelist}
-                style={{ marginBottom: 24 }}
-              >
-                <Form.Item
-                  name="ip"
-                  label="IP地址/范围"
-                  rules={[{ required: true, message: '请输入IP地址或范围' }]}
-                >
-                  <Input placeholder="如: 192.168.1.1 或 192.168.1.0/24" style={{ width: 250 }} />
-                </Form.Item>
-                <Form.Item
-                  name="description"
-                  label="描述"
-                  rules={[{ required: true, message: '请输入描述' }]}
-                >
-                  <Input placeholder="描述此IP的用途" style={{ width: 250 }} />
-                </Form.Item>
-                <Form.Item>
-                  <Button type="primary" htmlType="submit">
-                    添加
-                  </Button>
-                </Form.Item>
-              </Form>
-              
-              <Table
-                dataSource={ipWhitelist}
-                columns={ipColumns}
-                rowKey="id"
-                pagination={{ pageSize: 5 }}
-              />
-            </Card>
-          </Col>
-          
-          <Col span={24} style={{ marginTop: 24 }}>
-            <Card 
-              title={<Space><SafetyOutlined /> 安全防护</Space>} 
-              className="settings-card"
-            >
-              <List
-                itemLayout="horizontal"
-                dataSource={[
-                  {
-                    title: 'SQL注入防护',
-                    description: '防止恶意SQL注入攻击，保护数据库安全',
-                    icon: <DatabaseOutlined style={{ fontSize: 24, color: '#1890ff' }} />,
-                    enabled: true
-                  },
-                  {
-                    title: 'XSS攻击防护',
-                    description: '防止跨站脚本攻击，保护用户数据安全',
-                    icon: <CodeOutlined style={{ fontSize: 24, color: '#52c41a' }} />,
-                    enabled: true
-                  },
-                  {
-                    title: 'CSRF防护',
-                    description: '防止跨站请求伪造攻击',
-                    icon: <ApiOutlined style={{ fontSize: 24, color: '#722ed1' }} />,
-                    enabled: true
-                  },
-                  {
-                    title: 'DDoS防护',
-                    description: '防止分布式拒绝服务攻击',
-                    icon: <CloudServerOutlined style={{ fontSize: 24, color: '#fa8c16' }} />,
-                    enabled: false
-                  },
-                  {
-                    title: '敏感数据加密',
-                    description: '对敏感数据进行加密存储',
-                    icon: <LockOutlined style={{ fontSize: 24, color: '#eb2f96' }} />,
-                    enabled: true
-                  },
-                  {
-                    title: '防火墙',
-                    description: '系统级别的访问控制和防护',
-                    icon: <FireOutlined style={{ fontSize: 24, color: '#f5222d' }} />,
-                    enabled: true
-                  }
-                ]}
-                renderItem={item => (
-                  <List.Item
-                    actions={[
-                      <Switch checked={item.enabled} />
-                    ]}
-                  >
-                    <List.Item.Meta
-                      avatar={item.icon}
-                      title={item.title}
-                      description={item.description}
-                    />
-                  </List.Item>
-                )}
-              />
-            </Card>
-          </Col>
-        </Row>
-      )}
-
-      {activeTab === 'logs' && (
-        <Card className="settings-card">
+      {activeTab === 'ip' && (
+        <Card title="IP白名单设置" className="security-card">
           <Alert
-            message="安全日志说明"
-            description="安全日志记录了系统中与安全相关的操作和事件，包括用户登录、权限变更、安全设置修改等。定期审计安全日志有助于发现潜在的安全问题。"
+            message="IP白名单说明"
+            description="添加到白名单的IP地址将不受登录限制。可以添加单个IP地址或使用CIDR表示法添加IP段。"
             type="info"
             showIcon
-            style={{ marginBottom: 24 }}
+            style={{ marginBottom: 16 }}
           />
           
+          <Form
+            form={ipForm}
+            layout="inline"
+            onFinish={handleAddIpWhitelist}
+            style={{ marginBottom: 16 }}
+          >
+            <Form.Item
+              name="ip"
+              label="IP地址/范围"
+              rules={[
+                { required: true, message: '请输入IP地址' },
+                {
+                  pattern: /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/,
+                  message: '请输入有效的IP地址或CIDR范围'
+                }
+              ]}
+            >
+              <Input placeholder="例如: 192.168.1.1 或 192.168.1.0/24" style={{ width: 250 }} />
+            </Form.Item>
+            <Form.Item
+              name="description"
+              label="描述"
+              rules={[{ required: true, message: '请输入描述' }]}
+            >
+              <Input placeholder="例如: 公司内网" style={{ width: 250 }} />
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                添加
+              </Button>
+            </Form.Item>
+          </Form>
+          
+          <Table
+            dataSource={ipWhitelist}
+            rowKey="id"
+            pagination={false}
+            columns={[
+              {
+                title: 'IP地址/范围',
+                dataIndex: 'ip',
+                key: 'ip',
+              },
+              {
+                title: '描述',
+                dataIndex: 'description',
+                key: 'description',
+              },
+              {
+                title: '创建人',
+                dataIndex: 'createdBy',
+                key: 'createdBy',
+              },
+              {
+                title: '创建时间',
+                dataIndex: 'createdAt',
+                key: 'createdAt',
+                render: (text: string) => new Date(text).toLocaleString()
+              },
+              {
+                title: '操作',
+                key: 'action',
+                render: (_, record) => (
+                  <Popconfirm
+                    title="确定要删除此IP白名单吗？"
+                    onConfirm={() => handleDeleteIpWhitelist(record.id)}
+                    okText="确定"
+                    cancelText="取消"
+                  >
+                    <Button type="text" danger icon={<DeleteOutlined />}>
+                      删除
+                    </Button>
+                  </Popconfirm>
+                ),
+              },
+            ]}
+          />
+        </Card>
+      )}
+
+      {activeTab === 'audit' && (
+        <Card 
+          title="安全审计日志" 
+          className="security-card"
+          extra={
+            <Space>
+              <Button 
+                icon={<ExportOutlined />}
+                onClick={handleExportLogs}
+              >
+                导出日志
+              </Button>
+              <Popconfirm
+                title="确定要清空所有日志记录吗？此操作不可恢复。"
+                onConfirm={handleClearLogs}
+                okText="确定"
+                cancelText="取消"
+                okType="danger"
+              >
+                <Button 
+                  danger
+                  icon={<DeleteOutlined />}
+                >
+                  清空日志
+                </Button>
+              </Popconfirm>
+            </Space>
+          }
+        >
           <Table
             dataSource={logs}
-            columns={logColumns}
             rowKey="id"
             pagination={{ pageSize: 10 }}
-            scroll={{ x: 1000 }}
+            columns={logColumns}
           />
         </Card>
       )}

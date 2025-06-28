@@ -1270,283 +1270,366 @@ export interface DepartmentData {
   id: string;
   name: string;
   code: string;
-  parentId?: string;
-  level: number;
-  manager?: string;
+  manager: string;
+  description: string;
   memberCount: number;
-  description?: string;
+  createTime: string;
 }
 
 // 模拟用户数据
 export const mockUsers: UserData[] = [
   {
     id: 'user-001',
-    username: 'admin',
-    realName: '系统管理员',
-    email: 'admin@shipping.com',
-    phone: '13800138001',
+    username: 'zhangwei',
+    realName: '张伟',
+    email: 'zhangwei@example.com',
+    phone: '13812345678',
+    avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
     role: 'admin',
-    department: '信息技术部',
+    department: '系统管理部',
     status: 'active',
-    avatar: 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
-    lastLoginTime: '2025-06-25T08:30:00',
-    createTime: '2025-01-15T10:00:00',
-    permissions: ['all'],
-    loginCount: 156,
+    lastLoginTime: '2023-06-10T08:23:12Z',
+    createTime: '2022-01-15T00:00:00Z',
+    permissions: ['system:all', 'user:all', 'ship:all', 'port:all', 'report:all'],
+    loginCount: 286,
     lastLoginIp: '192.168.1.100',
-    remark: '系统超级管理员'
+    remark: '系统管理员，负责整体系统维护'
   },
   {
     id: 'user-002',
-    username: 'zhang.manager',
-    realName: '张经理',
-    email: 'zhang.manager@shipping.com',
-    phone: '13800138002',
+    username: 'liming',
+    realName: '李明',
+    email: 'liming@example.com',
+    phone: '13987654321',
+    avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
     role: 'manager',
     department: '运营管理部',
     status: 'active',
-    avatar: 'https://gw.alipayobjects.com/zos/rmsportal/ThXAXghbEsBCCSDihZxY.png',
-    lastLoginTime: '2025-06-25T09:15:00',
-    createTime: '2025-02-20T14:30:00',
-    permissions: ['ship_manage', 'cargo_manage', 'route_manage', 'report_view'],
-    assignedShips: ['ship-001', 'ship-002', 'ship-003'],
-    assignedPorts: ['青岛港', '上海港'],
-    loginCount: 89,
+    lastLoginTime: '2023-06-09T16:45:22Z',
+    createTime: '2022-02-18T00:00:00Z',
+    permissions: ['ship:view', 'ship:edit', 'port:view', 'port:edit', 'report:view', 'report:export'],
+    loginCount: 178,
     lastLoginIp: '192.168.1.101',
-    remark: '负责船舶运营管理'
+    remark: '运营部门经理，负责船舶调度'
   },
   {
     id: 'user-003',
-    username: 'li.operator',
-    realName: '李操作员',
-    email: 'li.operator@shipping.com',
-    phone: '13800138003',
+    username: 'wangjing',
+    realName: '王静',
+    email: 'wangjing@example.com',
+    phone: '13765432198',
+    avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
     role: 'operator',
-    department: '船舶调度部',
+    department: '物流部',
     status: 'active',
-    avatar: 'https://gw.alipayobjects.com/zos/rmsportal/OKJXDXrmkNshMvIwjTceG.png',
-    lastLoginTime: '2025-06-24T16:45:00',
-    createTime: '2025-03-10T11:20:00',
-    permissions: ['ship_track', 'cargo_track', 'route_view'],
-    assignedShips: ['ship-004', 'ship-005'],
-    assignedPorts: ['大连港', '烟台港'],
-    loginCount: 67,
+    lastLoginTime: '2023-06-10T09:12:45Z',
+    createTime: '2022-03-20T00:00:00Z',
+    permissions: ['ship:view', 'port:view', 'cargo:view', 'cargo:edit'],
+    loginCount: 145,
     lastLoginIp: '192.168.1.102',
-    remark: '负责船舶实时监控'
+    remark: '物流部操作员，负责货物跟踪'
   },
   {
     id: 'user-004',
-    username: 'wang.viewer',
-    realName: '王查看员',
-    email: 'wang.viewer@shipping.com',
-    phone: '13800138004',
-    role: 'viewer',
-    department: '客户服务部',
+    username: 'zhaolei',
+    realName: '赵雷',
+    email: 'zhaolei@example.com',
+    phone: '13612345678',
+    avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
+    role: 'operator',
+    department: '船舶管理部',
     status: 'active',
-    avatar: 'https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.png',
-    lastLoginTime: '2025-06-25T10:20:00',
-    createTime: '2025-04-05T09:15:00',
-    permissions: ['cargo_track', 'report_view'],
-    loginCount: 34,
+    lastLoginTime: '2023-06-09T14:30:00Z',
+    createTime: '2022-04-05T00:00:00Z',
+    permissions: ['ship:view', 'ship:edit', 'route:view', 'route:edit'],
+    loginCount: 132,
     lastLoginIp: '192.168.1.103',
-    remark: '负责客户查询服务'
+    remark: '船舶管理员，负责船舶维护'
   },
   {
     id: 'user-005',
-    username: 'chen.manager',
-    realName: '陈经理',
-    email: 'chen.manager@shipping.com',
-    phone: '13800138005',
-    role: 'manager',
+    username: 'chenxin',
+    realName: '陈欣',
+    email: 'chenxin@example.com',
+    phone: '13598765432',
+    avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
+    role: 'viewer',
     department: '财务部',
-    status: 'active',
-    avatar: 'https://gw.alipayobjects.com/zos/rmsportal/jZUIxmJycoymBprLOUbT.png',
-    lastLoginTime: '2025-06-24T14:30:00',
-    createTime: '2025-02-28T16:45:00',
-    permissions: ['finance_manage', 'report_view', 'cost_analysis'],
-    loginCount: 78,
+    status: 'inactive',
+    lastLoginTime: '2023-05-20T10:15:30Z',
+    createTime: '2022-05-12T00:00:00Z',
+    permissions: ['report:view', 'finance:view'],
+    loginCount: 56,
     lastLoginIp: '192.168.1.104',
-    remark: '负责财务管理和成本分析'
+    remark: '财务部查看员，负责查看财务报表'
   },
   {
     id: 'user-006',
-    username: 'zhao.operator',
-    realName: '赵操作员',
-    email: 'zhao.operator@shipping.com',
-    phone: '13800138006',
-    role: 'operator',
-    department: '船舶调度部',
-    status: 'inactive',
-    avatar: 'https://gw.alipayobjects.com/zos/rmsportal/tXlLQhLvkEelMstLyHiN.png',
-    lastLoginTime: '2025-06-20T11:15:00',
-    createTime: '2025-03-15T13:20:00',
-    permissions: ['ship_track', 'cargo_track'],
-    assignedShips: ['ship-001'],
-    loginCount: 23,
+    username: 'liuyang',
+    realName: '刘洋',
+    email: 'liuyang@example.com',
+    phone: '13712345678',
+    avatar: 'https://randomuser.me/api/portraits/men/4.jpg',
+    role: 'manager',
+    department: '客户服务部',
+    status: 'active',
+    lastLoginTime: '2023-06-08T16:20:15Z',
+    createTime: '2022-06-01T00:00:00Z',
+    permissions: ['customer:all', 'report:view', 'report:export'],
+    loginCount: 98,
     lastLoginIp: '192.168.1.105',
-    remark: '临时停用账号'
+    remark: '客户服务部经理，负责客户关系维护'
   },
   {
     id: 'user-007',
-    username: 'sun.viewer',
-    realName: '孙查看员',
-    email: 'sun.viewer@shipping.com',
-    phone: '13800138007',
-    role: 'viewer',
-    department: '市场部',
+    username: 'sunfei',
+    realName: '孙飞',
+    email: 'sunfei@example.com',
+    phone: '13898765432',
+    avatar: 'https://randomuser.me/api/portraits/men/5.jpg',
+    role: 'operator',
+    department: '技术支持部',
     status: 'suspended',
-    avatar: 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
-    lastLoginTime: '2025-06-18T09:45:00',
-    createTime: '2025-04-20T10:30:00',
-    permissions: ['report_view'],
-    loginCount: 12,
+    lastLoginTime: '2023-04-15T09:45:12Z',
+    createTime: '2022-07-10T00:00:00Z',
+    permissions: ['system:view', 'system:edit'],
+    loginCount: 65,
     lastLoginIp: '192.168.1.106',
-    remark: '账号被暂停使用'
+    remark: '技术支持工程师，负责系统维护'
   },
   {
     id: 'user-008',
-    username: 'wu.operator',
-    realName: '吴操作员',
-    email: 'wu.operator@shipping.com',
-    phone: '13800138008',
-    role: 'operator',
-    department: '船舶调度部',
-    status: 'active',
-    avatar: 'https://gw.alipayobjects.com/zos/rmsportal/ThXAXghbEsBCCSDihZxY.png',
-    lastLoginTime: '2025-06-25T07:30:00',
-    createTime: '2025-05-10T15:20:00',
-    permissions: ['ship_track', 'cargo_track', 'route_view'],
-    assignedShips: ['ship-002', 'ship-003'],
-    assignedPorts: ['济宁港'],
-    loginCount: 45,
-    lastLoginIp: '192.168.1.107',
-    remark: '新入职操作员'
-  }
-];
-
-// 角色权限配置
-export const rolePermissions: RolePermission[] = [
-  {
-    role: 'admin',
-    permissions: ['all'],
-    description: '系统管理员，拥有所有权限'
-  },
-  {
-    role: 'manager',
-    permissions: ['ship_manage', 'cargo_manage', 'route_manage', 'report_view', 'finance_manage', 'cost_analysis'],
-    description: '部门经理，拥有部门管理权限'
-  },
-  {
-    role: 'operator',
-    permissions: ['ship_track', 'cargo_track', 'route_view', 'anomaly_alert'],
-    description: '操作员，负责日常操作和监控'
-  },
-  {
+    username: 'yangmei',
+    realName: '杨梅',
+    email: 'yangmei@example.com',
+    phone: '13512345678',
+    avatar: 'https://randomuser.me/api/portraits/women/3.jpg',
     role: 'viewer',
-    permissions: ['cargo_track', 'report_view'],
-    description: '查看员，只能查看基本信息和报表'
+    department: '市场部',
+    status: 'active',
+    lastLoginTime: '2023-06-07T11:30:45Z',
+    createTime: '2022-08-15T00:00:00Z',
+    permissions: ['report:view', 'market:view'],
+    loginCount: 42,
+    lastLoginIp: '192.168.1.107',
+    remark: '市场部分析员，负责市场数据分析'
   }
 ];
 
-// 部门数据
+// 模拟部门数据
 export const mockDepartments: DepartmentData[] = [
   {
     id: 'dept-001',
-    name: '信息技术部',
-    code: 'IT',
-    level: 1,
-    manager: 'admin',
-    memberCount: 5,
-    description: '负责系统开发和维护'
+    name: '系统管理部',
+    code: 'SYS',
+    manager: 'zhangwei',
+    description: '负责系统整体管理和维护',
+    memberCount: 3,
+    createTime: '2022-01-01T00:00:00Z'
   },
   {
     id: 'dept-002',
     name: '运营管理部',
     code: 'OPS',
-    level: 1,
-    manager: 'zhang.manager',
-    memberCount: 12,
-    description: '负责船舶运营管理'
+    manager: 'liming',
+    description: '负责日常运营和调度管理',
+    memberCount: 8,
+    createTime: '2022-01-01T00:00:00Z'
   },
   {
     id: 'dept-003',
-    name: '船舶调度部',
-    code: 'DISP',
-    level: 1,
-    manager: 'li.operator',
-    memberCount: 8,
-    description: '负责船舶调度和监控'
+    name: '物流部',
+    code: 'LOG',
+    manager: 'wangjing',
+    description: '负责物流和货物运输管理',
+    memberCount: 12,
+    createTime: '2022-01-01T00:00:00Z'
   },
   {
     id: 'dept-004',
-    name: '客户服务部',
-    code: 'CS',
-    level: 1,
-    manager: 'wang.viewer',
-    memberCount: 6,
-    description: '负责客户服务和查询'
+    name: '船舶管理部',
+    code: 'SHIP',
+    manager: 'zhaolei',
+    description: '负责船舶维护和管理',
+    memberCount: 15,
+    createTime: '2022-01-01T00:00:00Z'
   },
   {
     id: 'dept-005',
     name: '财务部',
     code: 'FIN',
-    level: 1,
-    manager: 'chen.manager',
-    memberCount: 4,
-    description: '负责财务管理和成本分析'
+    manager: 'chenxin',
+    description: '负责财务管理和报表',
+    memberCount: 6,
+    createTime: '2022-01-01T00:00:00Z'
   },
   {
     id: 'dept-006',
+    name: '客户服务部',
+    code: 'CS',
+    manager: 'liuyang',
+    description: '负责客户关系维护和服务',
+    memberCount: 10,
+    createTime: '2022-01-01T00:00:00Z'
+  },
+  {
+    id: 'dept-007',
+    name: '技术支持部',
+    code: 'TECH',
+    manager: 'sunfei',
+    description: '负责技术支持和系统维护',
+    memberCount: 8,
+    createTime: '2022-01-01T00:00:00Z'
+  },
+  {
+    id: 'dept-008',
     name: '市场部',
     code: 'MKT',
-    level: 1,
-    manager: 'sun.viewer',
-    memberCount: 3,
-    description: '负责市场推广和客户开发'
+    manager: 'yangmei',
+    description: '负责市场分析和推广',
+    memberCount: 7,
+    createTime: '2022-01-01T00:00:00Z'
   }
 ];
 
-// 用户登录历史
-export interface LoginHistory {
-  id: string;
-  userId: string;
-  loginTime: string;
-  logoutTime?: string;
-  ipAddress: string;
-  userAgent: string;
-  status: 'success' | 'failed';
-  location?: string;
-}
+// 模拟角色权限数据
+export const rolePermissions: RolePermission[] = [
+  {
+    role: 'admin',
+    description: '系统管理员，拥有所有权限',
+    permissions: [
+      'system:all', 'user:all', 'ship:all', 'port:all', 
+      'cargo:all', 'route:all', 'report:all', 'finance:all',
+      'customer:all', 'market:all', 'log:all'
+    ]
+  },
+  {
+    role: 'manager',
+    description: '部门经理，拥有部门内所有权限',
+    permissions: [
+      'user:view', 'user:edit', 
+      'ship:view', 'ship:edit', 'ship:add',
+      'port:view', 'port:edit',
+      'cargo:view', 'cargo:edit',
+      'route:view', 'route:edit',
+      'report:view', 'report:export'
+    ]
+  },
+  {
+    role: 'operator',
+    description: '操作员，拥有基本操作权限',
+    permissions: [
+      'ship:view', 'ship:edit',
+      'port:view',
+      'cargo:view', 'cargo:edit',
+      'route:view', 'route:edit',
+      'report:view'
+    ]
+  },
+  {
+    role: 'viewer',
+    description: '查看员，只有查看权限',
+    permissions: [
+      'ship:view',
+      'port:view',
+      'cargo:view',
+      'route:view',
+      'report:view'
+    ]
+  }
+];
 
-export const mockLoginHistory: LoginHistory[] = [
+// 模拟登录历史数据
+export const mockLoginHistory = [
   {
     id: 'login-001',
     userId: 'user-001',
-    loginTime: '2025-06-25T08:30:00',
-    logoutTime: '2025-06-25T18:00:00',
+    loginTime: '2023-06-10T08:23:12Z',
     ipAddress: '192.168.1.100',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-    status: 'success',
-    location: '北京市朝阳区'
+    location: '上海市',
+    device: 'Chrome / Windows 10',
+    status: 'success'
   },
   {
     id: 'login-002',
     userId: 'user-002',
-    loginTime: '2025-06-25T09:15:00',
+    loginTime: '2023-06-09T16:45:22Z',
     ipAddress: '192.168.1.101',
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-    status: 'success',
-    location: '上海市浦东新区'
+    location: '北京市',
+    device: 'Firefox / macOS',
+    status: 'success'
   },
   {
     id: 'login-003',
     userId: 'user-003',
-    loginTime: '2025-06-24T16:45:00',
-    logoutTime: '2025-06-24T23:30:00',
+    loginTime: '2023-06-10T09:12:45Z',
     ipAddress: '192.168.1.102',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-    status: 'success',
-    location: '青岛市市南区'
+    location: '广州市',
+    device: 'Chrome / Windows 11',
+    status: 'success'
+  },
+  {
+    id: 'login-004',
+    userId: 'user-004',
+    loginTime: '2023-06-09T14:30:00Z',
+    ipAddress: '192.168.1.103',
+    location: '深圳市',
+    device: 'Safari / macOS',
+    status: 'success'
+  },
+  {
+    id: 'login-005',
+    userId: 'user-001',
+    loginTime: '2023-06-08T10:15:30Z',
+    ipAddress: '192.168.1.100',
+    location: '上海市',
+    device: 'Chrome / Windows 10',
+    status: 'success'
+  },
+  {
+    id: 'login-006',
+    userId: 'user-005',
+    loginTime: '2023-05-20T10:15:30Z',
+    ipAddress: '192.168.1.104',
+    location: '武汉市',
+    device: 'Edge / Windows 10',
+    status: 'success'
+  },
+  {
+    id: 'login-007',
+    userId: 'user-007',
+    loginTime: '2023-04-15T09:45:12Z',
+    ipAddress: '192.168.1.106',
+    location: '成都市',
+    device: 'Chrome / Ubuntu',
+    status: 'failed'
+  },
+  {
+    id: 'login-008',
+    userId: 'user-006',
+    loginTime: '2023-06-08T16:20:15Z',
+    ipAddress: '192.168.1.105',
+    location: '南京市',
+    device: 'Chrome / Windows 10',
+    status: 'success'
+  },
+  {
+    id: 'login-009',
+    userId: 'user-008',
+    loginTime: '2023-06-07T11:30:45Z',
+    ipAddress: '192.168.1.107',
+    location: '杭州市',
+    device: 'Safari / iOS',
+    status: 'success'
+  },
+  {
+    id: 'login-010',
+    userId: 'user-001',
+    loginTime: '2023-06-06T14:22:18Z',
+    ipAddress: '192.168.1.100',
+    location: '上海市',
+    device: 'Chrome / Windows 10',
+    status: 'success'
   }
 ];
 

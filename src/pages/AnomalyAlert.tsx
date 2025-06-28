@@ -13,6 +13,7 @@ import {
 } from '@ant-design/icons';
 import { mockShips, mockPorts, AnomalyEvent } from '../data/mockData';
 import '../styles/AnomalyAlert.css';
+import { message } from 'antd';
 
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
@@ -124,6 +125,7 @@ const mockHandlingHistory = [
 const AnomalyAlert: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [anomalyEvents, setAnomalyEvents] = useState<AnomalyEvent[]>(mockAnomalyEvents);
+  const [originalEvents, setOriginalEvents] = useState<AnomalyEvent[]>(mockAnomalyEvents); // 保存原始数据
   const [selectedAnomaly, setSelectedAnomaly] = useState<AnomalyEvent | null>(null);
   const [detailVisible, setDetailVisible] = useState<boolean>(false);
   const [addModalVisible, setAddModalVisible] = useState<boolean>(false);
@@ -131,6 +133,12 @@ const AnomalyAlert: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string[]>([]);
   const [filterSeverity, setFilterSeverity] = useState<string[]>([]);
   const [filterType, setFilterType] = useState<string[]>([]);
+  const [searchModalVisible, setSearchModalVisible] = useState<boolean>(false);
+  const [searchText, setSearchText] = useState<string>('');
+  const [notifyModalVisible, setNotifyModalVisible] = useState<boolean>(false);
+  const [notifyForm] = Form.useForm();
+  const [actionForm] = Form.useForm();
+  const [addAlertForm] = Form.useForm();
   
   // 获取船舶信息
   const getShipInfo = (shipId: string) => {
@@ -212,7 +220,7 @@ const AnomalyAlert: React.FC = () => {
   
   // 处理标签过滤
   useEffect(() => {
-    let filteredEvents = mockAnomalyEvents;
+    let filteredEvents = [...originalEvents];
     
     if (activeTab !== 'all') {
       filteredEvents = filteredEvents.filter(event => event.status === activeTab);
@@ -230,8 +238,168 @@ const AnomalyAlert: React.FC = () => {
       filteredEvents = filteredEvents.filter(event => filterType.includes(event.type));
     }
     
+    if (searchText) {
+      const lowerSearchText = searchText.toLowerCase();
+      filteredEvents = filteredEvents.filter(event => 
+        event.description.toLowerCase().includes(lowerSearchText) ||
+        event.id.toLowerCase().includes(lowerSearchText) ||
+        getShipInfo(event.shipId)?.name.toLowerCase().includes(lowerSearchText)
+      );
+    }
+    
     setAnomalyEvents(filteredEvents);
-  }, [activeTab, filterStatus, filterSeverity, filterType]);
+  }, [activeTab, filterStatus, filterSeverity, filterType, searchText, originalEvents]);
+  
+  // 处理搜索
+  const handleSearch = (values: any) => {
+    setSearchText(values.searchText || '');
+    setSearchModalVisible(false);
+  };
+  
+  // 标记为已解决
+  const markAsResolved = (record: AnomalyEvent) => {
+    const updatedEvents = originalEvents.map(event => {
+      if (event.id === record.id) {
+        return { ...event, status: 'resolved' as 'resolved' };
+      }
+      return event;
+    });
+    
+    setOriginalEvents(updatedEvents);
+    
+    // 添加处理记录
+    const newHistory = {
+      id: `history-${Date.now()}`,
+      anomalyId: record.id,
+      time: new Date().toISOString(),
+      action: '标记为已解决',
+      operator: '当前用户',
+      result: '异常已解决'
+    };
+    
+    setHandlingHistory([...handlingHistory, newHistory]);
+    
+    if (selectedAnomaly && selectedAnomaly.id === record.id) {
+      setSelectedAnomaly({ ...selectedAnomaly, status: 'resolved' as 'resolved' });
+    }
+    
+    message.success('已将异常标记为已解决');
+  };
+  
+  // 忽略警报
+  const ignoreAlert = (record: AnomalyEvent) => {
+    const updatedEvents = originalEvents.filter(event => event.id !== record.id);
+    setOriginalEvents(updatedEvents);
+    
+    message.success('已忽略该警报');
+    
+    if (detailVisible && selectedAnomaly && selectedAnomaly.id === record.id) {
+      setDetailVisible(false);
+    }
+  };
+  
+  // 发送通知
+  const sendNotification = (values: any) => {
+    if (!selectedAnomaly) return;
+    
+    message.success(`已向${values.recipients}发送关于${selectedAnomaly.id}的通知`);
+    
+    // 添加处理记录
+    const newHistory = {
+      id: `history-${Date.now()}`,
+      anomalyId: selectedAnomaly.id,
+      time: new Date().toISOString(),
+      action: '发送通知',
+      operator: '当前用户',
+      result: `已通知${values.recipients}: ${values.message}`
+    };
+    
+    setHandlingHistory([...handlingHistory, newHistory]);
+    setNotifyModalVisible(false);
+    notifyForm.resetFields();
+  };
+  
+  // 添加处理记录
+  const addHandlingRecord = () => {
+    if (!selectedAnomaly) return;
+    
+    const values = actionForm.getFieldsValue();
+    if (!values.action || !values.result) {
+      message.error('请填写处理动作和结果');
+      return;
+    }
+    
+    const newHistory = {
+      id: `history-${Date.now()}`,
+      anomalyId: selectedAnomaly.id,
+      time: new Date().toISOString(),
+      action: values.action,
+      operator: '当前用户',
+      result: values.result
+    };
+    
+    setHandlingHistory([...handlingHistory, newHistory]);
+    actionForm.resetFields();
+    message.success('处理记录已添加');
+    
+    // 如果是待处理状态，自动更新为处理中
+    if (selectedAnomaly.status === 'detected') {
+      const updatedEvents = originalEvents.map(event => {
+        if (event.id === selectedAnomaly.id) {
+          return { ...event, status: 'investigating' as 'investigating' };
+        }
+        return event;
+      });
+      
+      setOriginalEvents(updatedEvents);
+      setSelectedAnomaly({ ...selectedAnomaly, status: 'investigating' as 'investigating' });
+    }
+  };
+  
+  // 获取统计数据
+  const getStatistics = () => {
+    const totalCount = originalEvents.length;
+    const highCount = originalEvents.filter(e => e.severity === 'high').length;
+    const mediumCount = originalEvents.filter(e => e.severity === 'medium').length;
+    const lowCount = originalEvents.filter(e => e.severity === 'low').length;
+    const detectedCount = originalEvents.filter(e => e.status === 'detected').length;
+    const investigatingCount = originalEvents.filter(e => e.status === 'investigating').length;
+    const resolvedCount = originalEvents.filter(e => e.status === 'resolved').length;
+    
+    return {
+      totalCount,
+      highCount,
+      mediumCount,
+      lowCount,
+      detectedCount,
+      investigatingCount,
+      resolvedCount
+    };
+  };
+  
+  const stats = getStatistics();
+  
+  // 处理添加新预警
+  const handleAddAlert = (values: any) => {
+    // 创建新的预警对象
+    const newAlert: AnomalyEvent = {
+      id: `anomaly-${Date.now().toString().substr(-6)}`,
+      type: values.type as 'route_deviation' | 'weather_alert' | 'mechanical_failure' | 'cargo_issue' | 'security_alert',
+      severity: values.severity as 'high' | 'medium' | 'low',
+      shipId: values.shipId,
+      position: getShipInfo(values.shipId)?.position || { longitude: 120, latitude: 30 },
+      timestamp: new Date().toISOString(),
+      description: values.description,
+      status: 'detected' as 'detected'
+    };
+    
+    // 更新预警列表
+    setOriginalEvents([newAlert, ...originalEvents]);
+    
+    setAddModalVisible(false);
+    addAlertForm.resetFields();
+    message.success('新预警已添加');
+  };
   
   // 表格列定义
   const columns = [
@@ -301,13 +469,35 @@ const AnomalyAlert: React.FC = () => {
           <Dropdown 
             overlay={
               <Menu>
-                <Menu.Item key="1" icon={<MessageOutlined />}>
+                <Menu.Item 
+                  key="1" 
+                  icon={<MessageOutlined />}
+                  onClick={() => {
+                    setSelectedAnomaly(record);
+                    setNotifyModalVisible(true);
+                  }}
+                >
                   发送通知
                 </Menu.Item>
-                <Menu.Item key="2" icon={<CheckCircleOutlined />}>
+                <Menu.Item 
+                  key="2" 
+                  icon={<CheckCircleOutlined />}
+                  onClick={() => markAsResolved(record)}
+                  disabled={record.status === 'resolved'}
+                >
                   标记为已解决
                 </Menu.Item>
-                <Menu.Item key="3" icon={<StopOutlined />}>
+                <Menu.Item 
+                  key="3" 
+                  icon={<StopOutlined />}
+                  onClick={() => {
+                    Modal.confirm({
+                      title: '确认忽略',
+                      content: '确定要忽略此警报吗？此操作将从列表中移除该警报。',
+                      onOk: () => ignoreAlert(record)
+                    });
+                  }}
+                >
                   忽略此警报
                 </Menu.Item>
               </Menu>
@@ -319,36 +509,6 @@ const AnomalyAlert: React.FC = () => {
       ),
     },
   ];
-  
-  // 获取统计数据
-  const getStatistics = () => {
-    const totalCount = mockAnomalyEvents.length;
-    const highCount = mockAnomalyEvents.filter(e => e.severity === 'high').length;
-    const mediumCount = mockAnomalyEvents.filter(e => e.severity === 'medium').length;
-    const lowCount = mockAnomalyEvents.filter(e => e.severity === 'low').length;
-    const detectedCount = mockAnomalyEvents.filter(e => e.status === 'detected').length;
-    const investigatingCount = mockAnomalyEvents.filter(e => e.status === 'investigating').length;
-    const resolvedCount = mockAnomalyEvents.filter(e => e.status === 'resolved').length;
-    
-    return {
-      totalCount,
-      highCount,
-      mediumCount,
-      lowCount,
-      detectedCount,
-      investigatingCount,
-      resolvedCount
-    };
-  };
-  
-  const stats = getStatistics();
-  
-  // 处理添加新预警
-  const handleAddAlert = (values: any) => {
-    console.log('添加新预警:', values);
-    setAddModalVisible(false);
-    // 实际项目中这里会调用API添加预警
-  };
   
   return (
     <div className="anomaly-alert-container">
@@ -370,8 +530,12 @@ const AnomalyAlert: React.FC = () => {
                 >
                   添加预警
                 </Button>
-                <Button icon={<FilterOutlined />}>筛选</Button>
-                <Button icon={<SearchOutlined />}>搜索</Button>
+                <Button 
+                  icon={<SearchOutlined />}
+                  onClick={() => setSearchModalVisible(true)}
+                >
+                  搜索
+                </Button>
               </div>
             </div>
           </Card>
@@ -531,13 +695,20 @@ const AnomalyAlert: React.FC = () => {
           <Button key="back" onClick={() => setDetailVisible(false)}>
             关闭
           </Button>,
-          <Button 
-            key="submit" 
-            type="primary" 
-            onClick={() => setDetailVisible(false)}
-          >
-            标记为已解决
-          </Button>,
+          selectedAnomaly && selectedAnomaly.status !== 'resolved' && (
+            <Button 
+              key="submit" 
+              type="primary" 
+              onClick={() => {
+                if (selectedAnomaly) {
+                  markAsResolved(selectedAnomaly);
+                  setDetailVisible(false);
+                }
+              }}
+            >
+              标记为已解决
+            </Button>
+          ),
         ]}
         width={800}
       >
@@ -546,7 +717,13 @@ const AnomalyAlert: React.FC = () => {
             <Row gutter={[16, 16]}>
               <Col span={24}>
                 <Alert
-                  message={`${getSeverityTag(selectedAnomaly.severity)} ${getTypeTag(selectedAnomaly.type)} ${selectedAnomaly.description}`}
+                  message={
+                    <div>
+                      {getSeverityTag(selectedAnomaly.severity)}
+                      {getTypeTag(selectedAnomaly.type)}
+                      <span style={{ marginLeft: 8 }}>{selectedAnomaly.description}</span>
+                    </div>
+                  }
                   type={
                     selectedAnomaly.severity === 'high' ? 'error' :
                     selectedAnomaly.severity === 'medium' ? 'warning' : 'info'
@@ -599,7 +776,7 @@ const AnomalyAlert: React.FC = () => {
               
               <Col span={24}>
                 <Card title="添加处理记录" size="small">
-                  <Form layout="inline">
+                  <Form layout="inline" form={actionForm}>
                     <Form.Item name="action" style={{ width: '30%' }}>
                       <Input placeholder="处理动作" />
                     </Form.Item>
@@ -607,7 +784,7 @@ const AnomalyAlert: React.FC = () => {
                       <Input placeholder="处理结果" />
                     </Form.Item>
                     <Form.Item>
-                      <Button type="primary">添加</Button>
+                      <Button type="primary" onClick={addHandlingRecord}>添加</Button>
                     </Form.Item>
                   </Form>
                 </Card>
@@ -624,7 +801,7 @@ const AnomalyAlert: React.FC = () => {
         onCancel={() => setAddModalVisible(false)}
         footer={null}
       >
-        <Form layout="vertical" onFinish={handleAddAlert}>
+        <Form layout="vertical" onFinish={handleAddAlert} form={addAlertForm}>
           <Form.Item 
             name="shipId" 
             label="船舶" 
@@ -674,6 +851,72 @@ const AnomalyAlert: React.FC = () => {
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
               添加预警
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+      
+      {/* 搜索模态框 */}
+      <Modal
+        title="搜索预警"
+        visible={searchModalVisible}
+        onCancel={() => setSearchModalVisible(false)}
+        footer={null}
+      >
+        <Form layout="vertical" onFinish={handleSearch}>
+          <Form.Item name="searchText" label="搜索内容">
+            <Input 
+              placeholder="输入船舶名称、异常ID或描述关键词" 
+              prefix={<SearchOutlined />}
+              allowClear
+            />
+          </Form.Item>
+          
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              搜索
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+      
+      {/* 发送通知模态框 */}
+      <Modal
+        title="发送通知"
+        visible={notifyModalVisible}
+        onCancel={() => setNotifyModalVisible(false)}
+        footer={null}
+      >
+        <Form layout="vertical" onFinish={sendNotification} form={notifyForm}>
+          <Form.Item
+            name="recipients"
+            label="接收人"
+            rules={[{ required: true, message: '请选择接收人' }]}
+          >
+            <Select placeholder="选择接收人" mode="multiple">
+              <Option value="船长">船长</Option>
+              <Option value="船员">船员</Option>
+              <Option value="港口管理员">港口管理员</Option>
+              <Option value="物流管理员">物流管理员</Option>
+              <Option value="安全主管">安全主管</Option>
+            </Select>
+          </Form.Item>
+          
+          <Form.Item
+            name="message"
+            label="通知内容"
+            rules={[{ required: true, message: '请输入通知内容' }]}
+          >
+            <Input.TextArea 
+              rows={4} 
+              placeholder="输入通知内容"
+              defaultValue={selectedAnomaly ? `关于${selectedAnomaly?.description}的异常情况需要您注意...` : ''}
+            />
+          </Form.Item>
+          
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              发送通知
             </Button>
           </Form.Item>
         </Form>

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Row, Col, Table, Input, Select, Button, Tag, Drawer, Typography, Descriptions, Tabs, Empty, Tooltip } from 'antd';
 import { SearchOutlined, InfoCircleOutlined, EnvironmentOutlined, CompassOutlined, BarChartOutlined, 
-  FilterOutlined, ReloadOutlined, FullscreenOutlined, SettingOutlined, BellOutlined } from '@ant-design/icons';
+  FilterOutlined, ReloadOutlined, FullscreenOutlined, SettingOutlined, BellOutlined, AreaChartOutlined, GlobalOutlined } from '@ant-design/icons';
 import { mockShips, mockPorts, getShipTrack, ShipData, mockRoutes, weatherMarkers } from '../data/mockData';
 import RealMapComponent from '../components/RealMapComponent';
 import '../styles/ShipTracking.css';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -23,6 +24,10 @@ const ShipTracking: React.FC = () => {
   const [showWeather, setShowWeather] = useState(true);
   const [showLegend, setShowLegend] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  
+  const { shipId } = useParams<{ shipId?: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // 每2秒更新一次船舶位置
   useEffect(() => {
@@ -34,6 +39,24 @@ const ShipTracking: React.FC = () => {
     
     return () => clearInterval(intervalId);
   }, [isTracking]);
+
+  // 从URL参数中获取shipId
+  useEffect(() => {
+    // 从URL查询参数中获取shipId
+    const queryParams = new URLSearchParams(location.search);
+    const queryShipId = queryParams.get('shipId');
+    
+    // 如果URL路径中有shipId或查询参数中有shipId，显示对应船舶的详情
+    const idToUse = shipId || queryShipId;
+    
+    if (idToUse) {
+      const ship = mockShips.find(s => s.id === idToUse);
+      if (ship) {
+        setSelectedShip(ship);
+        setDrawerVisible(true);
+      }
+    }
+  }, [shipId, location.search]);
 
   // 处理搜索和筛选
   const handleSearch = () => {
@@ -230,6 +253,7 @@ const ShipTracking: React.FC = () => {
                 <Button
                   type={mapMode === 'standard' ? 'primary' : 'default'}
                   onClick={() => setMapMode('standard')}
+                  icon={<EnvironmentOutlined />}
                 >
                   标准
                 </Button>
@@ -238,6 +262,7 @@ const ShipTracking: React.FC = () => {
                 <Button
                   type={mapMode === 'terrain' ? 'primary' : 'default'}
                   onClick={() => setMapMode('terrain')}
+                  icon={<AreaChartOutlined />}
                 >
                   地形
                 </Button>
@@ -246,6 +271,7 @@ const ShipTracking: React.FC = () => {
                 <Button
                   type={mapMode === 'satellite' ? 'primary' : 'default'}
                   onClick={() => setMapMode('satellite')}
+                  icon={<GlobalOutlined />}
                 >
                   卫星
                 </Button>
@@ -331,7 +357,16 @@ const ShipTracking: React.FC = () => {
       <Drawer
         title={`船舶详情 - ${selectedShip?.name || ''}`}
         placement="right"
-        onClose={() => setDrawerVisible(false)}
+        onClose={() => {
+          setDrawerVisible(false);
+          // 如果是从URL参数打开的，关闭时返回到船舶跟踪页面
+          if (shipId) {
+            navigate('/ship-tracking');
+          } else if (location.search) {
+            // 如果是从查询参数打开的，清除查询参数
+            navigate('/ship-tracking');
+          }
+        }}
         open={drawerVisible}
         width={480}
         className="ship-detail-drawer"

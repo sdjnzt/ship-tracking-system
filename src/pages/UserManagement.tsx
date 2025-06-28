@@ -3,7 +3,7 @@ import {
   Card, Typography, Row, Col, Table, Button, Modal, Form, Input, Select, 
   Avatar, Tag, Space, Tooltip, Popconfirm, message, Tabs, Divider,
   DatePicker, Switch, Badge, Drawer, List, Descriptions, Statistic,
-  Progress, Alert, Upload, Image
+  Progress, Alert, Upload, Image, Checkbox
 } from 'antd';
 import {
   UserOutlined, TeamOutlined, SettingOutlined, PlusOutlined,
@@ -48,8 +48,11 @@ const UserManagement: React.FC = () => {
   const [userDetailVisible, setUserDetailVisible] = useState<boolean>(false);
   const [roleModalVisible, setRoleModalVisible] = useState<boolean>(false);
   const [deptModalVisible, setDeptModalVisible] = useState<boolean>(false);
+  const [deptMembersVisible, setDeptMembersVisible] = useState<boolean>(false);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [editingUser, setEditingUser] = useState<UserData | null>(null);
+  const [editingDept, setEditingDept] = useState<DepartmentData | null>(null);
+  const [selectedDept, setSelectedDept] = useState<DepartmentData | null>(null);
   const [searchText, setSearchText] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [roleFilter, setRoleFilter] = useState<string>('all');
@@ -122,11 +125,6 @@ const UserManagement: React.FC = () => {
       width: 280,
       render: (record: UserData) => (
         <Space size="middle">
-          <Avatar 
-            src={record.avatar} 
-            icon={<UserOutlined />}
-            size={48}
-          />
           <div>
             <div>
               <Text strong style={{ fontSize: '15px' }}>{record.realName}</Text>
@@ -224,48 +222,43 @@ const UserManagement: React.FC = () => {
       key: 'actions',
       width: 200,
       render: (record: UserData) => (
-        <Space size="middle">
-          <Tooltip title="查看详情">
-            <Button 
-              type="text" 
-              icon={<EyeOutlined />} 
-              onClick={() => handleViewUser(record)}
-            />
-          </Tooltip>
-          <Tooltip title="编辑用户">
-            <Button 
-              type="text" 
-              icon={<EditOutlined />} 
-              onClick={() => handleEditUser(record)}
-            />
-          </Tooltip>
-          <Tooltip title={record.status === 'active' ? '停用用户' : '启用用户'}>
-            <Button 
-              type="text" 
-              icon={record.status === 'active' ? <LockOutlined /> : <UnlockOutlined />}
-              onClick={() => handleToggleUserStatus(record)}
-            />
-          </Tooltip>
-          <Tooltip title="重置密码">
-            <Button 
-              type="text" 
-              icon={<KeyOutlined />} 
-              onClick={() => handleResetPassword(record)}
-            />
-          </Tooltip>
+        <Space size="middle" className="action-buttons">
+          <Button 
+            type="text" 
+            icon={<EyeOutlined />} 
+            onClick={() => handleViewUser(record)}
+            style={{ visibility: 'visible', opacity: 1 }}
+          />
+          <Button 
+            type="text" 
+            icon={<EditOutlined />} 
+            onClick={() => handleEditUser(record)}
+            style={{ visibility: 'visible', opacity: 1 }}
+          />
+          <Button 
+            type="text" 
+            icon={record.status === 'active' ? <LockOutlined /> : <UnlockOutlined />}
+            onClick={() => handleToggleUserStatus(record)}
+            style={{ visibility: 'visible', opacity: 1 }}
+          />
+          <Button 
+            type="text" 
+            icon={<KeyOutlined />} 
+            onClick={() => handleResetPassword(record)}
+            style={{ visibility: 'visible', opacity: 1 }}
+          />
           <Popconfirm
             title="确定要删除这个用户吗？"
             onConfirm={() => handleDeleteUser(record.id)}
             okText="确定"
             cancelText="取消"
           >
-            <Tooltip title="删除用户">
-              <Button 
-                type="text" 
-                danger 
-                icon={<DeleteOutlined />}
-              />
-            </Tooltip>
+            <Button 
+              type="text" 
+              danger 
+              icon={<DeleteOutlined />}
+              style={{ visibility: 'visible', opacity: 1 }}
+            />
           </Popconfirm>
         </Space>
       ),
@@ -310,19 +303,48 @@ const UserManagement: React.FC = () => {
       ),
     },
     {
+      title: '创建时间',
+      key: 'createTime',
+      dataIndex: 'createTime',
+      render: (time: string) => (
+        new Date(time).toLocaleDateString()
+      ),
+    },
+    {
       title: '操作',
       key: 'actions',
       render: (record: DepartmentData) => (
-        <Space>
-          <Button type="text" icon={<EditOutlined />}>编辑</Button>
-          <Button type="text" icon={<TeamOutlined />}>成员管理</Button>
+        <Space className="action-buttons">
+          <Button 
+            type="text" 
+            icon={<EditOutlined />}
+            style={{ visibility: 'visible', opacity: 1 }}
+            onClick={() => handleEditDepartment(record)}
+          >
+            编辑
+          </Button>
+          <Button 
+            type="text" 
+            icon={<TeamOutlined />}
+            style={{ visibility: 'visible', opacity: 1 }}
+            onClick={() => handleManageDeptMembers(record)}
+          >
+            成员管理
+          </Button>
           <Popconfirm
             title="确定要删除这个部门吗？"
             onConfirm={() => handleDeleteDepartment(record.id)}
             okText="确定"
             cancelText="取消"
           >
-            <Button type="text" danger icon={<DeleteOutlined />}>删除</Button>
+            <Button 
+              type="text" 
+              danger 
+              icon={<DeleteOutlined />}
+              style={{ visibility: 'visible', opacity: 1 }}
+            >
+              删除
+            </Button>
           </Popconfirm>
         </Space>
       ),
@@ -365,26 +387,135 @@ const UserManagement: React.FC = () => {
       u.id === user.id ? { ...u, status: newStatus as 'active' | 'inactive' | 'suspended' } : u
     );
     setUsers(updatedUsers);
-    message.success(`用户${newStatus === 'active' ? '启用' : '停用'}成功`);
+    message.success(`用户${user.realName}已${newStatus === 'active' ? '启用' : '停用'}`);
   };
 
   // 处理重置密码
   const handleResetPassword = (user: UserData) => {
-    message.success(`用户 ${user.realName} 的密码已重置为默认密码`);
+    Modal.confirm({
+      title: '重置密码确认',
+      content: `确定要重置 ${user.realName} 的密码吗？重置后密码将变为默认密码。`,
+      okText: '确定',
+      cancelText: '取消',
+      onOk: () => {
+        message.success(`用户 ${user.realName} 的密码已重置为默认密码`);
+      }
+    });
   };
 
   // 处理删除用户
   const handleDeleteUser = (userId: string) => {
+    const user = users.find(u => u.id === userId);
     const updatedUsers = users.filter(u => u.id !== userId);
     setUsers(updatedUsers);
-    message.success('用户删除成功');
+    message.success(`用户 ${user?.realName || userId} 已删除`);
+  };
+
+  // 处理编辑部门
+  const handleEditDepartment = (dept: DepartmentData) => {
+    setEditingDept(dept);
+    deptForm.setFieldsValue({
+      name: dept.name,
+      code: dept.code,
+      manager: dept.manager,
+      description: dept.description,
+    });
+    setDeptModalVisible(true);
+  };
+
+  // 处理添加部门
+  const handleAddDepartment = () => {
+    setEditingDept(null);
+    deptForm.resetFields();
+    setDeptModalVisible(true);
+  };
+
+  // 处理管理部门成员
+  const handleManageDeptMembers = (dept: DepartmentData) => {
+    setSelectedDept(dept);
+    setDeptMembersVisible(true);
+  };
+
+  // 处理部门表单提交
+  const handleDeptFormSubmit = (values: any) => {
+    if (editingDept) {
+      // 更新部门
+      const updatedDepts = departments.map(d => 
+        d.id === editingDept.id ? {
+          ...d,
+          name: values.name,
+          code: values.code,
+          manager: values.manager,
+          description: values.description
+        } : d
+      );
+      setDepartments(updatedDepts);
+      message.success(`部门 ${values.name} 已更新成功`);
+    } else {
+      // 添加部门
+      const newDept: DepartmentData = {
+        id: `dept-${Date.now()}`,
+        name: values.name,
+        code: values.code,
+        manager: values.manager,
+        description: values.description,
+        memberCount: 0,
+        createTime: new Date().toISOString(),
+      };
+      setDepartments([...departments, newDept]);
+      message.success(`部门 ${values.name} 已添加成功`);
+    }
+    setDeptModalVisible(false);
+    deptForm.resetFields();
   };
 
   // 处理删除部门
   const handleDeleteDepartment = (deptId: string) => {
+    const dept = departments.find(d => d.id === deptId);
+    // 检查部门是否有成员
+    const deptUsers = users.filter(u => u.department === dept?.name);
+    if (deptUsers.length > 0) {
+      Modal.confirm({
+        title: '无法删除部门',
+        content: `部门 ${dept?.name} 仍有 ${deptUsers.length} 名成员，请先将成员转移到其他部门。`,
+        okText: '确定',
+        cancelButtonProps: { style: { display: 'none' } }
+      });
+      return;
+    }
+    
     const updatedDepts = departments.filter(d => d.id !== deptId);
     setDepartments(updatedDepts);
-    message.success('部门删除成功');
+    message.success(`部门 ${dept?.name || deptId} 已删除`);
+  };
+
+  // 处理用户部门变更
+  const handleUserDeptChange = (userId: string, deptName: string) => {
+    const updatedUsers = users.map(u => 
+      u.id === userId ? { ...u, department: deptName } : u
+    );
+    setUsers(updatedUsers);
+    
+    // 更新部门成员数量
+    const deptCounts = new Map<string, number>();
+    updatedUsers.forEach(user => {
+      const count = deptCounts.get(user.department) || 0;
+      deptCounts.set(user.department, count + 1);
+    });
+    
+    const updatedDepts = departments.map(dept => ({
+      ...dept,
+      memberCount: deptCounts.get(dept.name) || 0
+    }));
+    
+    setDepartments(updatedDepts);
+    message.success('用户部门已更新');
+  };
+
+  // 处理表格变化
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    console.log('Table change:', pagination, filters, sorter);
+    // 可以在这里实现更复杂的表格排序、筛选逻辑
   };
 
   // 处理用户表单提交
@@ -402,13 +533,13 @@ const UserManagement: React.FC = () => {
           : u
       );
       setUsers(updatedUsers);
-      message.success('用户信息更新成功');
+      message.success(`用户 ${values.realName} 信息已更新`);
     } else {
       // 添加用户
       const newUser: UserData = {
         id: `user-${Date.now()}`,
         ...values,
-        avatar: 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
+        avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
         lastLoginTime: new Date().toISOString(),
         createTime: new Date().toISOString(),
         permissions: roles.find(r => r.role === values.role)?.permissions || [],
@@ -417,10 +548,51 @@ const UserManagement: React.FC = () => {
         status: values.status as 'active' | 'inactive' | 'suspended',
       };
       setUsers([...users, newUser]);
-      message.success('用户添加成功');
+      message.success(`用户 ${values.realName} 已添加成功`);
     }
     setUserModalVisible(false);
     userForm.resetFields();
+  };
+
+  // 处理编辑角色
+  const handleEditRole = (role: RolePermission) => {
+    roleForm.setFieldsValue({
+      role: role.role,
+      description: role.description,
+      permissions: role.permissions,
+    });
+    setRoleModalVisible(true);
+  };
+
+  // 处理角色表单提交
+  const handleRoleFormSubmit = (values: any) => {
+    const updatedRoles = roles.map(r =>
+      r.role === values.role
+        ? {
+            ...r,
+            description: values.description,
+            permissions: values.permissions,
+          }
+        : r
+    );
+    setRoles(updatedRoles);
+    message.success(`角色 ${values.role} 权限已更新`);
+    setRoleModalVisible(false);
+    roleForm.resetFields();
+  };
+
+  // 处理导出数据
+  const handleExportData = () => {
+    message.success('用户数据已导出');
+  };
+
+  // 处理导入数据
+  const handleImportData = () => {
+    Modal.info({
+      title: '导入用户数据',
+      content: '请选择符合格式的用户数据文件进行导入。',
+      okText: '确定',
+    });
   };
 
   // 生成统计数据
@@ -464,8 +636,18 @@ const UserManagement: React.FC = () => {
           >
             添加用户
           </Button>
-          <Button icon={<ExportOutlined />}>导出数据</Button>
-          <Button icon={<ImportOutlined />}>导入数据</Button>
+          <Button 
+            icon={<ExportOutlined />}
+            onClick={handleExportData}
+          >
+            导出数据
+          </Button>
+          <Button 
+            icon={<ImportOutlined />}
+            onClick={handleImportData}
+          >
+            导入数据
+          </Button>
           <Button 
             icon={<ReloadOutlined />} 
             onClick={() => {
@@ -569,7 +751,7 @@ const UserManagement: React.FC = () => {
           </Row>
 
           <Row gutter={[16, 16]}>
-            <Col xs={24} lg={16}>
+            <Col span={24}>
               <Card 
                 title={<Space><UserOutlined /> 用户列表</Space>} 
                 className="table-card"
@@ -611,7 +793,8 @@ const UserManagement: React.FC = () => {
                   </Space>
                 }
               >
-                <Table 
+                <Table
+                  loading={loading}
                   dataSource={users.filter(user => {
                     const matchesSearch = !searchText || 
                       user.realName.includes(searchText) || 
@@ -620,38 +803,19 @@ const UserManagement: React.FC = () => {
                     const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
                     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
                     return matchesSearch && matchesStatus && matchesRole;
-                  })} 
-                  columns={userColumns} 
+                  })}
+                  columns={userColumns}
                   rowKey="id"
-                  loading={loading}
-                  pagination={{ 
-                    pageSize: 8,
+                  pagination={{
+                    pageSize: 10,
+                    showQuickJumper: true,
                     showSizeChanger: true,
-                    pageSizeOptions: ['8', '16', '24'],
+                    pageSizeOptions: ['5', '10', '20', '50'],
                     showTotal: (total) => `共 ${total} 条记录`
                   }}
+                  className="user-table show-buttons action-buttons"
+                  onChange={handleTableChange}
                   scroll={{ x: 1200 }}
-                  bordered={false}
-                />
-              </Card>
-            </Col>
-            <Col xs={24} lg={8}>
-              <Card title={<Space><CrownOutlined /> 角色分布</Space>} className="chart-card">
-                <Pie 
-                  data={stats.roleStats.map(item => ({
-                    type: getRoleText(item.role),
-                    value: item.count
-                  }))}
-                  angleField="value"
-                  colorField="type"
-                  radius={0.8}
-                  innerRadius={0.5}
-                  label={{
-                    type: 'outer',
-                    content: '{name} {percentage}',
-                  }}
-                  legend={{ position: 'bottom' }}
-                  height={300}
                 />
               </Card>
             </Col>
@@ -660,13 +824,26 @@ const UserManagement: React.FC = () => {
       )}
 
       {activeTab === 'departments' && (
-        <Card title={<Space><TeamOutlined /> 部门管理</Space>} className="table-card">
+        <Card 
+          title={<Space><TeamOutlined /> 部门管理</Space>} 
+          className="table-card"
+          extra={
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />}
+              onClick={handleAddDepartment}
+            >
+              添加部门
+            </Button>
+          }
+        >
           <Table 
             dataSource={departments} 
             columns={deptColumns} 
             rowKey="id"
             loading={loading}
             pagination={{ pageSize: 10 }}
+            className="dept-table show-buttons action-buttons"
           />
         </Card>
       )}
@@ -678,8 +855,21 @@ const UserManagement: React.FC = () => {
             renderItem={(role) => (
               <List.Item
                 actions={[
-                  <Button type="text" icon={<EditOutlined />}>编辑</Button>,
-                  <Button type="text" icon={<EyeOutlined />}>查看权限</Button>
+                  <Button 
+                    type="text" 
+                    icon={<EditOutlined />}
+                    style={{ visibility: 'visible', opacity: 1 }}
+                    onClick={() => handleEditRole(role)}
+                  >
+                    编辑
+                  </Button>,
+                  <Button 
+                    type="text" 
+                    icon={<EyeOutlined />}
+                    style={{ visibility: 'visible', opacity: 1 }}
+                  >
+                    查看权限
+                  </Button>
                 ]}
               >
                 <List.Item.Meta
@@ -985,6 +1175,282 @@ const UserManagement: React.FC = () => {
           </div>
         )}
       </Drawer>
+
+      {/* 部门添加/编辑模态框 */}
+      <Modal
+        title={editingDept ? `编辑部门 - ${editingDept.name}` : "添加部门"}
+        open={deptModalVisible}
+        onCancel={() => setDeptModalVisible(false)}
+        footer={null}
+        width={600}
+      >
+        <Form
+          form={deptForm}
+          layout="vertical"
+          onFinish={handleDeptFormSubmit}
+        >
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="name"
+                label="部门名称"
+                rules={[{ required: true, message: '请输入部门名称' }]}
+              >
+                <Input placeholder="请输入部门名称" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="code"
+                label="部门代码"
+                rules={[{ required: true, message: '请输入部门代码' }]}
+              >
+                <Input placeholder="请输入部门代码" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="manager"
+                label="部门经理"
+                rules={[{ required: true, message: '请选择部门经理' }]}
+              >
+                <Select placeholder="请选择部门经理">
+                  {users.map(user => (
+                    <Option key={user.username} value={user.username}>
+                      {user.realName}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item
+            name="description"
+            label="部门描述"
+          >
+            <TextArea rows={3} placeholder="请输入部门描述" />
+          </Form.Item>
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit">
+                {editingDept ? '更新' : '保存'}
+              </Button>
+              <Button onClick={() => setDeptModalVisible(false)}>
+                取消
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 部门成员管理抽屉 */}
+      <Drawer
+        title={
+          <Space>
+            <TeamOutlined />
+            {selectedDept ? `${selectedDept.name} - 成员管理` : '成员管理'}
+          </Space>
+        }
+        placement="right"
+        width={700}
+        open={deptMembersVisible}
+        onClose={() => setDeptMembersVisible(false)}
+        extra={
+          <Button 
+            type="primary" 
+            icon={<UserAddOutlined />}
+            onClick={() => {
+              setDeptMembersVisible(false);
+              handleAddUser();
+            }}
+          >
+            添加成员
+          </Button>
+        }
+      >
+        {selectedDept && (
+          <>
+            <Alert
+              message={`${selectedDept.name} 部门成员`}
+              description={`部门经理: ${users.find(u => u.username === selectedDept.manager)?.realName || selectedDept.manager}`}
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+            
+            <List
+              itemLayout="horizontal"
+              dataSource={users.filter(user => user.department === selectedDept.name)}
+              renderItem={user => (
+                <List.Item
+                  actions={[
+                    <Button 
+                      type="text" 
+                      icon={<EditOutlined />}
+                      onClick={() => handleEditUser(user)}
+                    >
+                      编辑
+                    </Button>,
+                    <Button 
+                      type="text" 
+                      icon={<UserSwitchOutlined />}
+                      onClick={() => {
+                        Modal.confirm({
+                          title: '转移部门',
+                          content: (
+                            <div>
+                              <p>请选择要将 {user.realName} 转移到的新部门:</p>
+                              <Select 
+                                style={{ width: '100%', marginTop: 16 }}
+                                placeholder="选择新部门"
+                                onChange={(value) => {
+                                  handleUserDeptChange(user.id, value);
+                                  Modal.destroyAll();
+                                }}
+                              >
+                                {departments
+                                  .filter(d => d.name !== selectedDept.name)
+                                  .map(dept => (
+                                    <Option key={dept.id} value={dept.name}>
+                                      {dept.name}
+                                    </Option>
+                                  ))
+                                }
+                              </Select>
+                            </div>
+                          ),
+                          okText: '取消',
+                          cancelButtonProps: { style: { display: 'none' } }
+                        });
+                      }}
+                    >
+                      转移
+                    </Button>,
+                    user.username !== selectedDept.manager && (
+                      <Popconfirm
+                        title="确定要从部门移除此成员吗？"
+                        onConfirm={() => {
+                          // 将用户移动到默认部门
+                          handleUserDeptChange(user.id, '未分配');
+                          message.success(`已将 ${user.realName} 从 ${selectedDept.name} 移除`);
+                        }}
+                        okText="确定"
+                        cancelText="取消"
+                      >
+                        <Button 
+                          type="text" 
+                          danger 
+                          icon={<UserDeleteOutlined />}
+                        >
+                          移除
+                        </Button>
+                      </Popconfirm>
+                    )
+                  ].filter(Boolean)}
+                >
+                  <List.Item.Meta
+                    avatar={<Avatar src={user.avatar} icon={<UserOutlined />} />}
+                    title={
+                      <Space>
+                        <Text strong>{user.realName}</Text>
+                        {user.username === selectedDept.manager && (
+                          <Tag color="red">部门经理</Tag>
+                        )}
+                        <Tag color={getRoleColor(user.role)}>{getRoleText(user.role)}</Tag>
+                      </Space>
+                    }
+                    description={
+                      <Space direction="vertical" size={0}>
+                        <Text type="secondary">@{user.username}</Text>
+                        <Text type="secondary">{user.email} | {user.phone}</Text>
+                      </Space>
+                    }
+                  />
+                </List.Item>
+              )}
+            />
+          </>
+        )}
+      </Drawer>
+
+      {/* 角色权限编辑模态框 */}
+      <Modal
+        title="编辑角色权限"
+        open={roleModalVisible}
+        onCancel={() => setRoleModalVisible(false)}
+        footer={null}
+        width={700}
+      >
+        <Form
+          form={roleForm}
+          layout="vertical"
+          onFinish={handleRoleFormSubmit}
+        >
+          <Form.Item
+            name="role"
+            label="角色标识"
+            rules={[{ required: true, message: '请输入角色标识' }]}
+          >
+            <Input placeholder="请输入角色标识" disabled />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="角色描述"
+            rules={[{ required: true, message: '请输入角色描述' }]}
+          >
+            <Input placeholder="请输入角色描述" />
+          </Form.Item>
+          <Form.Item
+            name="permissions"
+            label="权限列表"
+            rules={[{ required: true, message: '请选择权限' }]}
+          >
+            <Checkbox.Group style={{ width: '100%' }}>
+              <Row>
+                <Col span={8}>
+                  <Checkbox value="system:all">系统管理</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value="user:all">用户管理</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value="ship:all">船舶管理</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value="port:all">港口管理</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value="cargo:all">货物管理</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value="route:all">航线管理</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value="report:all">报表管理</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value="finance:all">财务管理</Checkbox>
+                </Col>
+                <Col span={8}>
+                  <Checkbox value="customer:all">客户管理</Checkbox>
+                </Col>
+              </Row>
+            </Checkbox.Group>
+          </Form.Item>
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit">
+                保存
+              </Button>
+              <Button onClick={() => setRoleModalVisible(false)}>
+                取消
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

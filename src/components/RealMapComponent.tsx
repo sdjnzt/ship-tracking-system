@@ -261,9 +261,9 @@ const RealMapComponent: React.FC<RealMapComponentProps> = ({
   const getMapTileUrl = () => {
     switch (currentMapType) {
       case 'satellite':
-        return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
       case 'terrain':
-        return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        return 'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg';
       case 'standard':
       default:
         return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -274,8 +274,9 @@ const RealMapComponent: React.FC<RealMapComponentProps> = ({
   const getMapAttribution = () => {
     switch (currentMapType) {
       case 'satellite':
+        return '&copy; <a href="https://www.esri.com/">Esri</a>';
       case 'terrain':
-        return '&copy; <a href="https://www.google.com/maps">Google Maps</a>';
+        return 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>';
       case 'standard':
       default:
         return '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';

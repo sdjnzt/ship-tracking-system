@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Card, Typography, Row, Col, List, Tag, 
   Statistic, Badge, Switch, Radio, Space, 
-  Tooltip, Button, Empty, Spin, Modal, Alert
+  Tooltip, Button, Empty, Spin, Modal, Alert, Input, Descriptions
 } from 'antd';
 import type { RadioChangeEvent } from 'antd';
 import { 
@@ -12,7 +12,6 @@ import {
   ExclamationCircleOutlined, EyeOutlined, DashboardOutlined,
   RightOutlined, CalendarOutlined
 } from '@ant-design/icons';
-import AMapComponent from '../components/AMapComponent';
 import '../styles/WeatherForecast.css';
 
 const { Title, Text, Paragraph } = Typography;
@@ -150,6 +149,9 @@ const WeatherForecast: React.FC = () => {
   const [selectedLocation, setSelectedLocation] = useState<WeatherForecastData | null>(null);
   const [detailModalVisible, setDetailModalVisible] = useState<boolean>(false);
   const [showOnlyAlerts, setShowOnlyAlerts] = useState<boolean>(false);
+  const [searchModalVisible, setSearchModalVisible] = useState<boolean>(false);
+  const [searchText, setSearchText] = useState<string>('');
+  const [alertsModalVisible, setAlertsModalVisible] = useState<boolean>(false);
   
   useEffect(() => {
     setLoading(true);
@@ -161,9 +163,49 @@ const WeatherForecast: React.FC = () => {
   }, []);
   
   // Filter data to show only locations with alerts if the switch is on
-  const filteredData = showOnlyAlerts
-    ? weatherData.filter(item => item.alerts && item.alerts.length > 0)
-    : weatherData;
+  const filteredData = weatherData.filter(item => {
+    // 首先应用预警过滤
+    if (showOnlyAlerts && (!item.alerts || item.alerts.length === 0)) {
+      return false;
+    }
+    
+    // 然后应用搜索文本过滤
+    if (searchText) {
+      const lowerSearchText = searchText.toLowerCase();
+      return item.location.toLowerCase().includes(lowerSearchText);
+    }
+    
+    return true;
+  });
+  
+  // 处理搜索
+  const handleSearch = (value: string) => {
+    setSearchText(value);
+    setSearchModalVisible(false);
+  };
+  
+  // 显示所有高风险预警
+  const showAllHighRiskAlerts = () => {
+    setShowOnlyAlerts(true);
+    setAlertsModalVisible(true);
+  };
+  
+  // 获取所有高风险预警
+  const getAllHighRiskAlerts = () => {
+    const highRiskAlerts: Array<{location: string, alerts: any[]}> = [];
+    
+    weatherData.forEach(location => {
+      if (location.alerts && location.alerts.some(alert => alert.severity === 'high')) {
+        const highAlerts = location.alerts.filter(alert => alert.severity === 'high');
+        highRiskAlerts.push({
+          location: location.location,
+          alerts: highAlerts
+        });
+      }
+    });
+    
+    return highRiskAlerts;
+  };
   
   // Get weather condition icon
   const getWeatherIcon = (condition: string) => {
@@ -541,24 +583,26 @@ const WeatherForecast: React.FC = () => {
           </div>
         </div>
 
-        {/* Map with location */}
-        <div className="detail-map">
-          <Title level={4}><EnvironmentOutlined /> 位置</Title>
-          <div className="map-container" style={{ height: 300 }}>
-            <AMapComponent 
-              ships={[]}
-              ports={[]}
-              onShipClick={() => {}}
-              weatherMarkers={[{
-                id: selectedLocation.id,
-                position: selectedLocation.position,
-                type: 'fog',
-                severity: 'medium'
-              }]}
-              zoomToFit={true}
-              routes={[]}
-            />
-          </div>
+        {/* 添加位置信息卡片替代地图 */}
+        <div className="detail-location">
+          <Title level={4}><EnvironmentOutlined /> 位置信息</Title>
+          <Card>
+            <Descriptions column={2}>
+              <Descriptions.Item label="经度">{selectedLocation.position.longitude.toFixed(4)}°E</Descriptions.Item>
+              <Descriptions.Item label="纬度">{selectedLocation.position.latitude.toFixed(4)}°N</Descriptions.Item>
+              <Descriptions.Item label="海域">{selectedLocation.location}</Descriptions.Item>
+              <Descriptions.Item label="区域">中国沿海</Descriptions.Item>
+            </Descriptions>
+            <div style={{ marginTop: 16, textAlign: 'right' }}>
+              <Button 
+                type="primary" 
+                icon={<EnvironmentOutlined />} 
+                onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${selectedLocation.position.latitude},${selectedLocation.position.longitude}`, '_blank')}
+              >
+                在地图服务中查看位置
+              </Button>
+            </div>
+          </Card>
         </div>
       </Modal>
     );
@@ -598,6 +642,7 @@ const WeatherForecast: React.FC = () => {
             <Button 
               icon={<SearchOutlined />}
               type="primary"
+              onClick={() => setSearchModalVisible(true)}
             >
               搜索区域
             </Button>
@@ -650,7 +695,12 @@ const WeatherForecast: React.FC = () => {
                 item.alerts && 
                 item.alerts.some(alert => alert.severity === 'high')
               ).length}个港口海域存在高风险天气状况，请相关船只注意航行安全，避开恶劣天气区域。</p>
-              <Button type="primary" danger size="small">
+              <Button 
+                type="primary" 
+                danger 
+                size="small"
+                onClick={showAllHighRiskAlerts}
+              >
                 查看详细警报
               </Button>
                 </div>
@@ -662,24 +712,100 @@ const WeatherForecast: React.FC = () => {
       )}
       
       {/* Main content */}
-            {loading ? (
-              <div className="loading-container">
-                <Spin size="large" />
-                <p>加载天气数据中...</p>
-              </div>
+      {loading ? (
+        <div className="loading-container">
+          <Spin size="large" />
+          <p>加载天气数据中...</p>
+        </div>
       ) : filteredData.length > 0 ? (
         <div className="weather-content">
           {viewMode === 'grid' ? renderGridView() : renderListView()}
-                        </div>
-                ) : (
+        </div>
+      ) : (
         <Empty 
           description="没有找到符合条件的天气数据" 
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
-                )}
+      )}
       
       {/* Weather Detail Modal */}
       {renderDetailModal()}
+      
+      {/* 搜索模态框 */}
+      <Modal
+        title="搜索区域"
+        open={searchModalVisible}
+        onCancel={() => setSearchModalVisible(false)}
+        footer={null}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <Input.Search
+            placeholder="输入港口或海域名称"
+            allowClear
+            enterButton="搜索"
+            size="large"
+            onSearch={handleSearch}
+          />
+        </div>
+        <div>
+          <Text type="secondary">热门搜索: </Text>
+          <Space wrap>
+            {['青岛港', '上海港', '大连港', '烟台港', '厦门港'].map(name => (
+              <Tag 
+                key={name} 
+                style={{ cursor: 'pointer' }} 
+                onClick={() => handleSearch(name)}
+              >
+                {name}
+              </Tag>
+            ))}
+          </Space>
+        </div>
+      </Modal>
+      
+      {/* 高风险预警模态框 */}
+      <Modal
+        title={<span><WarningOutlined style={{ color: '#ff4d4f' }} /> 高风险天气预警</span>}
+        open={alertsModalVisible}
+        onCancel={() => setAlertsModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setAlertsModalVisible(false)}>
+            关闭
+          </Button>
+        ]}
+        width={700}
+      >
+        <List
+          dataSource={getAllHighRiskAlerts()}
+          renderItem={item => (
+            <List.Item>
+              <Card 
+                title={<span><EnvironmentOutlined /> {item.location}</span>}
+                style={{ width: '100%' }}
+                size="small"
+              >
+                {item.alerts.map((alert, index) => (
+                  <Alert
+                    key={index}
+                    message={alert.type}
+                    description={
+                      <div>
+                        <p>{alert.description}</p>
+                        <p style={{ fontSize: '12px', color: '#999' }}>
+                          有效期: {new Date(alert.startTime).toLocaleString()} - {new Date(alert.endTime).toLocaleString()}
+                        </p>
+                      </div>
+                    }
+                    type="error"
+                    showIcon
+                    style={{ marginBottom: 8 }}
+                  />
+                ))}
+              </Card>
+            </List.Item>
+          )}
+        />
+      </Modal>
     </div>
   );
 };

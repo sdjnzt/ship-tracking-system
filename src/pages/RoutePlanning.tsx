@@ -91,137 +91,334 @@ const RoutePlanning: React.FC = () => {
         weatherRisks: []
       };
       
+      // 获取两个港口之间的大致距离（海里）
+      const getDistanceInNauticalMiles = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+        const R = 6371; // 地球半径，单位为公里
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+          Math.sin(dLat/2) * Math.sin(dLat/2) +
+          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+          Math.sin(dLon/2) * Math.sin(dLon/2); 
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        const distance = R * c;
+        return distance * 0.539957; // 转换为海里
+      };
+      
+      // 计算两点之间的直线距离
+      const distance = getDistanceInNauticalMiles(
+        originPort.position.latitude, 
+        originPort.position.longitude, 
+        destinationPort.position.latitude, 
+        destinationPort.position.longitude
+      );
+      
+      // 根据距离计算航行时间（天）
+      const getEstimatedDays = (distance: number, speed: number) => {
+        return distance / (speed * 24); // 速度为节（海里/小时）
+      };
+      
+      // 生成航线中间点，考虑海岸线和航道
+      const generateWaypoints = (
+        origin: { longitude: number; latitude: number }, 
+        destination: { longitude: number; latitude: number },
+        routeType: string,
+        numPoints: number
+      ) => {
+        const waypoints = [];
+        
+        // 添加起点
+        waypoints.push({
+          position: { longitude: origin.longitude, latitude: origin.latitude },
+          estimatedPassTime: baseRoute.departureTime,
+          status: 'current' as 'current'
+        });
+        
+        // 根据不同航线类型生成中间点
+        switch(routeType) {
+        case 'fastest':
+            // 最快路线：较直接但避开主要陆地
+            // 在中国沿海，需要考虑山东半岛、长江口等地形
+            if (
+              (origin.latitude < 35 && destination.latitude > 37) || 
+              (origin.latitude > 37 && destination.latitude < 35)
+            ) {
+              // 如果航线需要绕过山东半岛
+              const midPoint1 = {
+                longitude: 122.8, // 向东偏移到海上
+                latitude: (origin.latitude + destination.latitude) * 0.4,
+              };
+              
+              const midPoint2 = {
+                longitude: 123.2,
+                latitude: (origin.latitude + destination.latitude) * 0.6,
+              };
+              
+              waypoints.push({
+                position: midPoint1,
+                estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2).toISOString(),
+                status: 'upcoming' as 'upcoming'
+              });
+              
+              waypoints.push({
+                position: midPoint2,
+                estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString(),
+                status: 'upcoming' as 'upcoming'
+              });
+            } else {
+              // 添加一个稍微偏离的中间点，使路线不是完全直线
+              for (let i = 1; i < numPoints - 1; i++) {
+                const ratio = i / numPoints;
+                // 添加一些随机偏移，但保持路线相对直接
+                const offsetLon = (Math.random() - 0.5) * 0.3;
+                const offsetLat = (Math.random() - 0.5) * 0.3;
+                
+                waypoints.push({
+              position: { 
+                    longitude: origin.longitude + (destination.longitude - origin.longitude) * ratio + offsetLon,
+                    latitude: origin.latitude + (destination.latitude - origin.latitude) * ratio + offsetLat
+                  },
+                  estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * (1 + ratio * 4)).toISOString(),
+                  status: 'upcoming' as 'upcoming'
+                });
+              }
+            }
+            break;
+            
+          case 'safest':
+            // 最安全路线：远离危险区域，可能更加弯曲
+            // 通常会远离海岸线和已知的危险区域
+            if (
+              (origin.latitude < 35 && destination.latitude > 37) || 
+              (origin.latitude > 37 && destination.latitude < 35)
+            ) {
+              // 如果需要绕过山东半岛，走更外海的路线
+              waypoints.push({
+                position: { longitude: 123.5, latitude: origin.latitude + (destination.latitude - origin.latitude) * 0.25 },
+                estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 1.5).toISOString(),
+                status: 'upcoming' as 'upcoming'
+              });
+              
+              waypoints.push({
+                position: { longitude: 124.2, latitude: origin.latitude + (destination.latitude - origin.latitude) * 0.5 },
+              estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString(),
+                status: 'upcoming' as 'upcoming'
+              });
+              
+              waypoints.push({
+                position: { longitude: 123.8, latitude: origin.latitude + (destination.latitude - origin.latitude) * 0.75 },
+                estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 4.5).toISOString(),
+                status: 'upcoming' as 'upcoming'
+              });
+            } else {
+              // 生成更多的中间点，使路线更加平滑
+              for (let i = 1; i < numPoints; i++) {
+                const ratio = i / numPoints;
+                // 添加较大的随机偏移，使路线更加弯曲
+                const offsetLon = (Math.random() - 0.5) * 0.8;
+                // 确保偏移向海洋方向
+                const offsetLat = (Math.random() - 0.5) * 0.8;
+                
+                waypoints.push({
+                  position: {
+                    longitude: origin.longitude + (destination.longitude - origin.longitude) * ratio + offsetLon,
+                    latitude: origin.latitude + (destination.latitude - origin.latitude) * ratio + offsetLat
+                  },
+                  estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * (1 + ratio * 5)).toISOString(),
+                  status: 'upcoming' as 'upcoming'
+                });
+              }
+            }
+            break;
+            
+          case 'economical':
+            // 经济路线：考虑洋流和风向，可能会有更多的中间点
+            // 尽量靠近海岸线，但保持安全距离
+            if (
+              (origin.latitude < 35 && destination.latitude > 37) || 
+              (origin.latitude > 37 && destination.latitude < 35)
+            ) {
+              // 如果需要绕过山东半岛，选择最经济的路线
+              // 这通常意味着更接近海岸线，但不会太近
+              waypoints.push({
+                position: { longitude: 122.2, latitude: origin.latitude + (destination.latitude - origin.latitude) * 0.2 },
+                estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 1.2).toISOString(),
+                status: 'upcoming' as 'upcoming'
+              });
+              
+              // 添加烟台港作为可能的中转点
+              const yantaiPort = mockPorts.find(p => p.name === '烟台港');
+              if (yantaiPort) {
+                waypoints.push({
+                  position: { 
+                    longitude: yantaiPort.position.longitude, 
+                    latitude: yantaiPort.position.latitude 
+                  },
+                  estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2.5).toISOString(),
+                  status: 'upcoming' as 'upcoming'
+                });
+              }
+              
+              waypoints.push({
+                position: { longitude: 122.5, latitude: origin.latitude + (destination.latitude - origin.latitude) * 0.7 },
+                estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 4).toISOString(),
+                status: 'upcoming' as 'upcoming'
+              });
+            } else {
+              // 沿着海岸线生成更多的点
+              for (let i = 1; i < numPoints + 1; i++) {
+                const ratio = i / (numPoints + 1);
+                // 添加适量的随机偏移，使路线看起来更自然
+                const offsetLon = (Math.random() - 0.5) * 0.5;
+                const offsetLat = (Math.random() - 0.5) * 0.5;
+                
+                // 尝试找到附近的港口作为可能的中转点
+                const nearbyPort = mockPorts.find(p => 
+                  Math.abs(p.position.longitude - (origin.longitude + (destination.longitude - origin.longitude) * ratio)) < 0.5 &&
+                  Math.abs(p.position.latitude - (origin.latitude + (destination.latitude - origin.latitude) * ratio)) < 0.5
+                );
+                
+                if (nearbyPort && Math.random() > 0.5) {
+                  // 有50%的几率将附近港口添加为中转点
+                  waypoints.push({
+                    position: { 
+                      longitude: nearbyPort.position.longitude, 
+                      latitude: nearbyPort.position.latitude 
+                    },
+                    estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * (1 + ratio * 4.5)).toISOString(),
+                    status: 'upcoming' as 'upcoming'
+                  });
+                } else {
+                  waypoints.push({
+              position: { 
+                      longitude: origin.longitude + (destination.longitude - origin.longitude) * ratio + offsetLon,
+                      latitude: origin.latitude + (destination.latitude - origin.latitude) * ratio + offsetLat
+                    },
+                    estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * (1 + ratio * 4.5)).toISOString(),
+                    status: 'upcoming' as 'upcoming'
+                  });
+                }
+              }
+            }
+            break;
+        }
+        
+        // 添加终点
+        waypoints.push({
+          position: { longitude: destination.longitude, latitude: destination.latitude },
+          estimatedPassTime: baseRoute.estimatedArrival,
+          status: 'upcoming' as 'upcoming'
+        });
+        
+        return waypoints;
+      };
+      
       // 根据选择的路线类型来设置不同的数据
+      let speed = 0;
+      let fuelRate = 0;
+      let weatherRisks = [];
+      let numWaypoints = 0;
+      
       switch (selectedRoute) {
         case 'fastest':
-          // 最快路线: 直接路径，较高油耗，少中转点
-          baseRoute.waypoints = [
-            {
-              position: { longitude: originPort.position.longitude, latitude: originPort.position.latitude },
-              estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
-              status: 'current'
-            },
-            {
-              position: { 
-                longitude: (originPort.position.longitude + destinationPort.position.longitude) / 2, 
-                latitude: (originPort.position.latitude + destinationPort.position.latitude) / 2 
-              },
-              estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString(),
-              status: 'upcoming'
-            },
-            {
-              position: { longitude: destinationPort.position.longitude, latitude: destinationPort.position.latitude },
-              estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5).toISOString(),
-              status: 'upcoming'
-            }
-          ];
-          baseRoute.distance = 820;
-          baseRoute.fuelConsumption = 45;
-          baseRoute.weatherRisks = [
-            {
-              position: { 
-                longitude: (originPort.position.longitude + destinationPort.position.longitude) / 2 + 0.5, 
-                latitude: (originPort.position.latitude + destinationPort.position.latitude) / 2 - 0.3
-              },
-              type: 'storm',
-              severity: 'medium',
-              estimatedTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString()
-            }
-          ];
+          // 最快路线: 高速度，较高油耗
+          speed = 22; // 节
+          fuelRate = 0.06; // 每海里消耗的燃油（吨）
+          numWaypoints = 3; // 较少的中间点
           break;
           
         case 'safest':
-          // 最安全路线: 更长路程，避开危险区域
-          baseRoute.waypoints = [
-            {
-              position: { longitude: originPort.position.longitude, latitude: originPort.position.latitude },
-              estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
-              status: 'current'
-            },
-            {
-              position: { 
-                longitude: originPort.position.longitude + 0.5, 
-                latitude: originPort.position.latitude + 0.8
-              },
-              estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2).toISOString(),
-              status: 'upcoming'
-            },
-            {
-              position: { 
-                longitude: (originPort.position.longitude + destinationPort.position.longitude) / 2 + 0.8, 
-                latitude: (originPort.position.latitude + destinationPort.position.latitude) / 2 + 0.5
-              },
-              estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 4).toISOString(),
-              status: 'upcoming'
-            },
-            {
-              position: { longitude: destinationPort.position.longitude, latitude: destinationPort.position.latitude },
-              estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 6).toISOString(),
-              status: 'upcoming'
-            }
-          ];
-          baseRoute.distance = 980;
-          baseRoute.fuelConsumption = 52;
-          // 没有天气风险
-          baseRoute.weatherRisks = [];
-          // 更新到达时间
-          baseRoute.estimatedArrival = new Date(Date.now() + 1000 * 60 * 60 * 24 * 6).toISOString();
+          // 最安全路线: 中等速度，较高油耗（因为可能路程更长）
+          speed = 18; // 节
+          fuelRate = 0.055; // 每海里消耗的燃油（吨）
+          numWaypoints = 5; // 更多的中间点以避开危险区域
           break;
           
         case 'economical':
-          // 经济路线: 平衡距离和油耗，可能多个中转点
-          baseRoute.waypoints = [
-            {
-              position: { longitude: originPort.position.longitude, latitude: originPort.position.latitude },
-              estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
-              status: 'current'
-            },
-            {
-              position: { 
-                longitude: originPort.position.longitude + 0.3, 
-                latitude: originPort.position.latitude + 0.4
-              },
-              estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2).toISOString(),
-              status: 'upcoming'
-            },
-            {
-              position: { 
-                longitude: (originPort.position.longitude + destinationPort.position.longitude) / 2, 
-                latitude: (originPort.position.latitude + destinationPort.position.latitude) / 2
-              },
-              estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString(),
-              status: 'upcoming'
-            },
-            {
-              position: { 
-                longitude: destinationPort.position.longitude - 0.4, 
-                latitude: destinationPort.position.latitude - 0.3
-              },
-              estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5).toISOString(),
-              status: 'upcoming'
-            },
-            {
-              position: { longitude: destinationPort.position.longitude, latitude: destinationPort.position.latitude },
-              estimatedPassTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5.5).toISOString(),
-              status: 'upcoming'
-            }
-          ];
-          baseRoute.distance = 890;
-          baseRoute.fuelConsumption = 38; // 最低的油耗
-          baseRoute.weatherRisks = [
-            {
-              position: { 
-                longitude: originPort.position.longitude + 0.3, 
-                latitude: originPort.position.latitude + 0.4
-              },
-              type: 'fog',
-              severity: 'low',
-              estimatedTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2).toISOString()
-            }
-          ];
-          // 更新到达时间
-          baseRoute.estimatedArrival = new Date(Date.now() + 1000 * 60 * 60 * 24 * 5.5).toISOString();
+          // 经济路线: 较低速度，最低油耗
+          speed = 15; // 节
+          fuelRate = 0.045; // 每海里消耗的燃油（吨）
+          numWaypoints = 4; // 平衡的中间点数量
           break;
+      }
+      
+      // 生成航线点
+      baseRoute.waypoints = generateWaypoints(
+        originPort.position, 
+        destinationPort.position, 
+        selectedRoute,
+        numWaypoints
+      );
+      
+      // 计算实际航线距离（考虑中间点）
+      let totalDistance = 0;
+      for (let i = 0; i < baseRoute.waypoints.length - 1; i++) {
+        const point1 = baseRoute.waypoints[i].position;
+        const point2 = baseRoute.waypoints[i + 1].position;
+        totalDistance += getDistanceInNauticalMiles(
+          point1.latitude, point1.longitude, 
+          point2.latitude, point2.longitude
+        );
+      }
+      
+      // 设置航线信息
+      baseRoute.distance = Math.round(totalDistance);
+      baseRoute.fuelConsumption = Math.round(totalDistance * fuelRate);
+      
+      // 估算航行时间并更新到达时间
+      const travelDays = getEstimatedDays(totalDistance, speed);
+      baseRoute.estimatedArrival = new Date(Date.now() + 1000 * 60 * 60 * 24 * travelDays).toISOString();
+      
+      // 更新中间点的预计通过时间
+      for (let i = 1; i < baseRoute.waypoints.length; i++) {
+        const distanceToThisPoint = baseRoute.waypoints.slice(0, i+1).reduce((acc, curr, idx, arr) => {
+          if (idx === 0) return 0;
+          const prev = arr[idx-1].position;
+          const curr_pos = curr.position;
+          return acc + getDistanceInNauticalMiles(
+            prev.latitude, prev.longitude, 
+            curr_pos.latitude, curr_pos.longitude
+          );
+        }, 0);
+        
+        const daysToThisPoint = getEstimatedDays(distanceToThisPoint, speed);
+        baseRoute.waypoints[i].estimatedPassTime = new Date(Date.now() + 1000 * 60 * 60 * 24 * daysToThisPoint).toISOString();
+      }
+      
+      // 生成天气风险
+      if (selectedRoute !== 'safest') {
+        // 安全路线避开了所有风险
+        const numRisks = selectedRoute === 'fastest' ? 2 : 1;
+        
+        for (let i = 0; i < numRisks; i++) {
+          // 随机选择一个中间点附近作为风险点
+          const waypointIdx = Math.floor(Math.random() * (baseRoute.waypoints.length - 2)) + 1;
+          const waypoint = baseRoute.waypoints[waypointIdx];
+          
+          // 添加一些随机偏移
+          const offsetLon = (Math.random() - 0.5) * 0.8;
+          const offsetLat = (Math.random() - 0.5) * 0.8;
+          
+          // 风险类型
+          const riskTypes = ['storm', 'high_waves', 'fog', 'ice'] as const;
+          const riskType = riskTypes[Math.floor(Math.random() * riskTypes.length)];
+          
+          // 风险严重程度
+          const severityLevels = ['low', 'medium', 'high'] as const;
+          const severity = selectedRoute === 'fastest' ? 
+            severityLevels[Math.floor(Math.random() * 3)] : 
+            severityLevels[Math.floor(Math.random() * 2)]; // 经济路线避开高风险
+          
+          baseRoute.weatherRisks.push({
+            position: {
+              longitude: waypoint.position.longitude + offsetLon,
+              latitude: waypoint.position.latitude + offsetLat
+            },
+            type: riskType,
+            severity: severity,
+            estimatedTime: waypoint.estimatedPassTime
+          });
+        }
       }
       
       setRouteInfo(baseRoute);
@@ -426,14 +623,77 @@ const RoutePlanning: React.FC = () => {
                       };
                       estimatedPassTime: string;
                       status: 'passed' | 'upcoming' | 'current';
-                    }, idx: number) => ({
-                      title: idx === 0 ? routeInfo.originPort : 
-                            idx === routeInfo.waypoints.length - 1 ? routeInfo.destinationPort : 
-                            `航点 ${idx}`,
-                      description: formatDate(wp.estimatedPassTime),
+                    }, idx: number) => {
+                      // 计算到下一个点的距离（如果不是最后一个点）
+                      let distanceToNext = '';
+                      let timeToNext = '';
+                      if (idx < routeInfo.waypoints.length - 1) {
+                        const nextWp = routeInfo.waypoints[idx + 1];
+                        // 使用之前定义的距离计算函数
+                        const getDistanceInNauticalMiles = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+                          const R = 6371; // 地球半径，单位为公里
+                          const dLat = (lat2 - lat1) * Math.PI / 180;
+                          const dLon = (lon2 - lon1) * Math.PI / 180;
+                          const a = 
+                            Math.sin(dLat/2) * Math.sin(dLat/2) +
+                            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                            Math.sin(dLon/2) * Math.sin(dLon/2); 
+                          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+                          const distance = R * c;
+                          return distance * 0.539957; // 转换为海里
+                        };
+                        
+                        const distance = getDistanceInNauticalMiles(
+                          wp.position.latitude, 
+                          wp.position.longitude, 
+                          nextWp.position.latitude, 
+                          nextWp.position.longitude
+                        );
+                        
+                        distanceToNext = `距离下一点: ${distance.toFixed(1)} 海里`;
+                        
+                        // 计算到下一个点的时间
+                        const wpTime = new Date(wp.estimatedPassTime).getTime();
+                        const nextWpTime = new Date(nextWp.estimatedPassTime).getTime();
+                        const hoursDiff = (nextWpTime - wpTime) / (1000 * 60 * 60);
+                        timeToNext = `航行时间: ${hoursDiff.toFixed(1)} 小时`;
+                      }
+                      
+                      // 确定航点类型和名称
+                      let waypointType = '';
+                      if (idx === 0) {
+                        waypointType = '起点港口';
+                      } else if (idx === routeInfo.waypoints.length - 1) {
+                        waypointType = '终点港口';
+                      } else {
+                        // 检查是否接近某个港口
+                        const nearbyPort = mockPorts.find(port => 
+                          Math.abs(port.position.longitude - wp.position.longitude) < 0.2 &&
+                          Math.abs(port.position.latitude - wp.position.latitude) < 0.2
+                        );
+                        
+                        if (nearbyPort) {
+                          waypointType = `途经港口 (${nearbyPort.name})`;
+                        } else {
+                          waypointType = '海上航点';
+                        }
+                      }
+                      
+                      return {
+                        title: idx === 0 ? `${waypointType}: ${routeInfo.originPort}` : 
+                              idx === routeInfo.waypoints.length - 1 ? `${waypointType}: ${routeInfo.destinationPort}` : 
+                              `${waypointType} (${wp.position.longitude.toFixed(2)}°E, ${wp.position.latitude.toFixed(2)}°N)`,
+                        description: (
+                          <div>
+                            <div>预计时间: {formatDate(wp.estimatedPassTime)}</div>
+                            {distanceToNext && <div>{distanceToNext}</div>}
+                            {timeToNext && <div>{timeToNext}</div>}
+                          </div>
+                        ),
                       status: wp.status === 'current' ? 'process' : 
                               wp.status === 'passed' ? 'finish' : 'wait'
-                    }))}
+                      };
+                    })}
                   />
                   
                   {routeInfo.weatherRisks.length > 0 && (

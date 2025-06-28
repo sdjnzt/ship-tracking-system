@@ -3,7 +3,8 @@ import {
   Card, Typography, Row, Col, Table, Statistic, 
   Input, Button, Tag, Tabs, Space, Spin, 
   Tooltip, Badge, Progress, Divider, List, Avatar,
-  Empty, Radio, RadioChangeEvent
+  Empty, Radio, RadioChangeEvent, Modal, Select, Form,
+  Checkbox, message, DatePicker
 } from 'antd';
 import { 
   SearchOutlined, EnvironmentOutlined, ClockCircleOutlined, 
@@ -11,15 +12,18 @@ import {
   CheckCircleOutlined, CloseCircleOutlined, ReloadOutlined,
   FileTextOutlined, CaretUpOutlined, CaretDownOutlined,
   GlobalOutlined, AppstoreOutlined, UnorderedListOutlined,
-  FilterOutlined, RightOutlined
+  FilterOutlined, RightOutlined, DownloadOutlined, SyncOutlined
 } from '@ant-design/icons';
 import AMapComponent from '../components/AMapComponent';
 import { mockShips, mockPorts, PortData } from '../data/mockData';
 import '../styles/PortInformation.css';
+import { useNavigate } from 'react-router-dom';
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
 const { Group: RadioGroup, Button: RadioButton } = Radio;
+const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 const PortInformation: React.FC = () => {
   const [searchText, setSearchText] = useState('');
@@ -28,6 +32,12 @@ const PortInformation: React.FC = () => {
   const [selectedPort, setSelectedPort] = useState<PortData | null>(null);
   const [activeTab, setActiveTab] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [filterForm] = Form.useForm();
+  const [exportModalVisible, setExportModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  
+  const navigate = useNavigate();
 
   useEffect(() => {
     // 初始加载效果
@@ -226,6 +236,89 @@ const PortInformation: React.FC = () => {
     setActiveTab(key);
     filterPortsByStatus(key);
   };
+  
+  // 处理高级筛选
+  const handleAdvancedFilter = (values: any) => {
+    let filtered = [...mockPorts];
+    
+    // 按国家/地区筛选
+    if (values.countries && values.countries.length > 0) {
+      filtered = filtered.filter(port => values.countries.includes(port.country));
+    }
+    
+    // 按容量利用率筛选
+    if (values.occupancyRange) {
+      const [min, max] = values.occupancyRange;
+      filtered = filtered.filter(port => {
+        const occupancyRate = (port.currentOccupancy / port.capacity) * 100;
+        return occupancyRate >= min && occupancyRate <= max;
+      });
+    }
+    
+    // 按等待时间筛选
+    if (values.waitingTimeRange) {
+      const [min, max] = values.waitingTimeRange;
+      filtered = filtered.filter(port => port.waitingTime >= min && port.waitingTime <= max);
+    }
+    
+    // 按停靠船只数量筛选
+    if (values.shipsCountRange) {
+      const [min, max] = values.shipsCountRange;
+      filtered = filtered.filter(port => port.ships.length >= min && port.ships.length <= max);
+    }
+    
+    // 按状态筛选
+    if (values.status && values.status.length > 0) {
+      filtered = filtered.filter(port => values.status.includes(getPortStatus(port)));
+    }
+    
+    setFilteredPorts(filtered);
+    setFilterModalVisible(false);
+    message.success(`已筛选出 ${filtered.length} 个符合条件的港口`);
+  };
+  
+  // 重置筛选条件
+  const resetFilters = () => {
+    filterForm.resetFields();
+  };
+  
+  // 导出数据
+  const exportData = (format: string) => {
+    setExportModalVisible(false);
+    message.loading('正在导出数据...');
+    
+    // 模拟导出延迟
+    setTimeout(() => {
+      message.success(`已成功导出 ${filteredPorts.length} 个港口数据为 ${format} 格式`);
+    }, 1500);
+  };
+  
+  // 刷新数据
+  const refreshData = () => {
+    setRefreshing(true);
+    setLoading(true);
+    
+    // 模拟刷新延迟
+    setTimeout(() => {
+      // 随机更新一些港口数据，模拟实时更新
+      const updatedPorts = mockPorts.map(port => {
+        // 随机更新部分港口的数据
+        if (Math.random() > 0.7) {
+          return {
+            ...port,
+            currentOccupancy: Math.min(port.capacity, port.currentOccupancy + Math.floor(Math.random() * 5) - 2),
+            waitingTime: Math.max(0, port.waitingTime + Math.floor(Math.random() * 3) - 1)
+          };
+        }
+        return port;
+      });
+      
+      setFilteredPorts(updatedPorts);
+      setLoading(false);
+      setRefreshing(false);
+      message.success('数据已更新');
+    }, 1500);
+  };
 
   // 渲染港口详情
   const renderPortDetails = () => {
@@ -379,7 +472,7 @@ const PortInformation: React.FC = () => {
                           </Space>
                         }
                       />
-                      <Button type="link" icon={<RightOutlined />}>详情</Button>
+                      <Button type="link" icon={<RightOutlined />} onClick={() => navigate(`/ship-tracking?shipId=${ship.id}`)}>详情</Button>
                     </List.Item>
                   )}
                 />
@@ -486,12 +579,28 @@ const PortInformation: React.FC = () => {
               <RadioButton value="list"><UnorderedListOutlined /> 列表视图</RadioButton>
             </RadioGroup>
             
-            <Button 
-              icon={<FilterOutlined />}
-              type="primary"
-            >
-              筛选
-            </Button>
+            <Space>
+              <Button 
+                icon={<FilterOutlined />}
+                type="primary"
+                onClick={() => setFilterModalVisible(true)}
+              >
+                筛选
+              </Button>
+              <Button 
+                icon={<DownloadOutlined />}
+                onClick={() => setExportModalVisible(true)}
+              >
+                导出数据
+              </Button>
+              <Button 
+                icon={<SyncOutlined spin={refreshing} />}
+                onClick={refreshData}
+                disabled={refreshing}
+              >
+                刷新数据
+              </Button>
+            </Space>
           </Space>
         </div>
       </div>
@@ -624,6 +733,102 @@ const PortInformation: React.FC = () => {
       
       {/* 港口详情 */}
       {selectedPort && renderPortDetails()}
+      
+      {/* 筛选模态框 */}
+      <Modal
+        title="高级筛选"
+        open={filterModalVisible}
+        onCancel={() => setFilterModalVisible(false)}
+        footer={[
+          <Button key="reset" onClick={resetFilters}>
+            重置
+          </Button>,
+          <Button key="cancel" onClick={() => setFilterModalVisible(false)}>
+            取消
+          </Button>,
+          <Button key="submit" type="primary" onClick={() => filterForm.submit()}>
+            应用筛选
+          </Button>
+        ]}
+        width={700}
+      >
+        <Form
+          form={filterForm}
+          layout="vertical"
+          onFinish={handleAdvancedFilter}
+        >
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="国家/地区" name="countries">
+                <Select mode="multiple" placeholder="选择国家/地区" allowClear>
+                  {Array.from(new Set(mockPorts.map(port => port.country))).map(country => (
+                    <Option key={country} value={country}>{country}</Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="港口状态" name="status">
+                <Checkbox.Group>
+                  <Checkbox value="high">繁忙</Checkbox>
+                  <Checkbox value="medium">适中</Checkbox>
+                  <Checkbox value="low">空闲</Checkbox>
+                </Checkbox.Group>
+              </Form.Item>
+            </Col>
+          </Row>
+          
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item label="容量利用率范围 (%)" name="occupancyRange">
+                <Select>
+                  <Option value={[0, 50]}>低于50%</Option>
+                  <Option value={[50, 80]}>50% - 80%</Option>
+                  <Option value={[80, 100]}>高于80%</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item label="等待时间范围 (小时)" name="waitingTimeRange">
+                <Select>
+                  <Option value={[0, 2]}>0 - 2小时</Option>
+                  <Option value={[2, 4]}>2 - 4小时</Option>
+                  <Option value={[4, 24]}>4小时以上</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          
+          <Form.Item label="停靠船只数量" name="shipsCountRange">
+            <Select>
+              <Option value={[0, 5]}>少于5艘</Option>
+              <Option value={[5, 10]}>5 - 10艘</Option>
+              <Option value={[10, 100]}>10艘以上</Option>
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
+      
+      {/* 导出模态框 */}
+      <Modal
+        title="导出数据"
+        open={exportModalVisible}
+        onCancel={() => setExportModalVisible(false)}
+        footer={null}
+      >
+        <p>选择导出格式：</p>
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Button block icon={<FileTextOutlined />} onClick={() => exportData('Excel')}>
+            导出为Excel (.xlsx)
+          </Button>
+          <Button block icon={<FileTextOutlined />} onClick={() => exportData('CSV')}>
+            导出为CSV (.csv)
+          </Button>
+          <Button block icon={<FileTextOutlined />} onClick={() => exportData('PDF')}>
+            导出为PDF (.pdf)
+          </Button>
+        </Space>
+      </Modal>
     </div>
   );
 };

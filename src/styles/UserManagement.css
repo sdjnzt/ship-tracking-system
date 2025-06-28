@@ -132,6 +132,34 @@
   gap: 8px;
 }
 
+/* 确保所有按钮始终可见 - 全局样式 */
+.ant-table-tbody .ant-btn,
+.ant-list-item-action .ant-btn,
+.ant-table-row .ant-btn,
+.ant-table-cell .ant-btn,
+.ant-table-row-level-0 .ant-btn {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
+}
+
+/* 确保操作按钮始终可见 */
+.user-management .ant-table-tbody .ant-btn {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.show-buttons .ant-btn {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.action-buttons .ant-btn {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
+}
+
 /* 标签样式 */
 .user-management .ant-tag {
   padding: 4px 10px;

@@ -19,6 +19,18 @@
   margin-bottom: 16px;
 }
 
+.control-panel {
+  background-color: #f5f7fa;
+  padding: 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .stats-row {
   margin-bottom: 20px;
 }
@@ -74,7 +86,7 @@
   .page-header > div:last-child {
     margin-top: 16px;
   }
-}
+} 
 
 /* 新增船舶绩效排行榜样式 */
 .performance-rank-table .ant-table-thead > tr > th {
@@ -226,12 +238,16 @@
 }
 
 .hover-buttons {
-  visibility: hidden;
-  opacity: 0;
-  transition: visibility 0s, opacity 0.3s linear;
+  visibility: visible;
+  opacity: 1;
 }
 
 .ant-table-row:hover .hover-buttons {
   visibility: visible;
   opacity: 1;
+}
+
+.show-buttons .hover-buttons {
+  visibility: visible !important;
+  opacity: 1 !important;
 } 

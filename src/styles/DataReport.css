@@ -43,8 +43,8 @@
 }
 
 .chart-container {
-  height: 350px;
-  padding: 16px 0;
+  height: 400px;
+  padding: 12px;
 }
 
 .report-tabs {
@@ -71,10 +71,77 @@
   height: 3px;
 }
 
+.report-tabs .ant-tabs-content {
+  padding-top: 16px;
+}
+
 /* 表格样式 */
 .ant-table-thead > tr > th {
   background: #fafafa;
   font-weight: 600;
+}
+
+/* 新增样式 */
+.card-title-with-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.export-options {
+  padding: 8px;
+}
+
+.export-options .ant-divider {
+  margin: 16px 0;
+}
+
+.export-options .ant-checkbox-wrapper {
+  margin-bottom: 8px;
+}
+
+.ant-table-summary {
+  background-color: #fafafa;
+}
+
+.ant-table-summary .ant-table-cell {
+  padding: 12px 16px;
+}
+
+.report-filter-form .ant-form-item {
+  margin-bottom: 16px;
+}
+
+.data-summary-card {
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.data-summary-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.data-summary-label {
+  font-weight: 500;
+}
+
+.data-summary-value {
+  font-weight: bold;
+}
+
+.filter-tag {
+  margin-bottom: 8px;
+  margin-right: 8px;
 }
 
 /* 响应式调整 */
@@ -86,6 +153,7 @@
   .report-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 16px;
   }
   
   .report-header .ant-space {
@@ -99,5 +167,9 @@
   
   .stats-row .ant-card {
     margin-bottom: 12px;
+  }
+  
+  .chart-container {
+    height: 300px;
   }
 } 

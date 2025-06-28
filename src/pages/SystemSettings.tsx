@@ -3,7 +3,7 @@ import {
   Card, Typography, Row, Col, Form, Input, Button, Switch, 
   Tabs, Space, Slider, InputNumber, Select, Table, Tag, 
   Tooltip, Divider, Alert, List, Badge, Collapse, Descriptions,
-  Radio, Popconfirm, message, Upload, TimePicker
+  Radio, Popconfirm, message, Upload, TimePicker, Modal
 } from 'antd';
 import {
   SettingOutlined, GlobalOutlined, BgColorsOutlined, 
@@ -15,7 +15,7 @@ import {
   TranslationOutlined, UploadOutlined, CloudServerOutlined,
   RocketOutlined, CompassOutlined, ThunderboltOutlined,
   FileOutlined, DesktopOutlined, LayoutOutlined, UserOutlined,
-  HistoryOutlined, DeleteOutlined
+  HistoryOutlined, DeleteOutlined, ExportOutlined
 } from '@ant-design/icons';
 import moment from 'moment';
 import '../styles/SystemSettings.css';
@@ -260,72 +260,150 @@ const SystemSettings: React.FC = () => {
     }, 500);
   };
 
-  // 添加设置变更日志
+  // 添加配置变更日志
   const addConfigChangeLog = (section: string, changes: string) => {
     const newLog: ConfigChangeLog = {
       id: `change-${Date.now()}`,
       timestamp: new Date().toISOString(),
       user: 'admin', // 假设当前用户是admin
-      section,
-      changes,
+      section: section,
+      changes: changes
     };
     setConfigLogs([newLog, ...configLogs]);
   };
 
-  // 重置表单到默认设置
+  // 重置为默认设置
   const resetToDefaults = (formType: string) => {
-    switch (formType) {
-      case 'general':
-        generalForm.setFieldsValue(initialSystemConfig.general);
-        break;
-      case 'display':
-        displayForm.setFieldsValue(initialSystemConfig.display);
-        break;
-      case 'notification':
-        notificationForm.setFieldsValue(initialSystemConfig.notification);
-        break;
-      case 'dataManagement':
-        dataManagementForm.setFieldsValue(initialSystemConfig.dataManagement);
-        break;
-      case 'integration':
-        integrationForm.setFieldsValue(initialSystemConfig.integration);
-        break;
-      default:
-        break;
-    }
-    message.info('已重置为默认设置，请点击保存以应用更改');
+    Modal.confirm({
+      title: '确认重置',
+      content: '确定要将设置重置为系统默认值吗？',
+      okText: '确定',
+      cancelText: '取消',
+      onOk: () => {
+        switch (formType) {
+          case 'general':
+            generalForm.setFieldsValue(initialSystemConfig.general);
+            message.success('已重置为默认常规设置');
+            addConfigChangeLog('常规设置', '重置为默认值');
+            break;
+          case 'display':
+            displayForm.setFieldsValue(initialSystemConfig.display);
+            message.success('已重置为默认显示设置');
+            addConfigChangeLog('显示设置', '重置为默认值');
+            break;
+          case 'notification':
+            notificationForm.setFieldsValue(initialSystemConfig.notification);
+            message.success('已重置为默认通知设置');
+            addConfigChangeLog('通知设置', '重置为默认值');
+            break;
+          case 'dataManagement':
+            dataManagementForm.setFieldsValue(initialSystemConfig.dataManagement);
+            message.success('已重置为默认数据管理设置');
+            addConfigChangeLog('数据管理', '重置为默认值');
+            break;
+          case 'integration':
+            integrationForm.setFieldsValue(initialSystemConfig.integration);
+            message.success('已重置为默认集成设置');
+            addConfigChangeLog('集成设置', '重置为默认值');
+            break;
+          case 'all':
+            generalForm.setFieldsValue(initialSystemConfig.general);
+            displayForm.setFieldsValue(initialSystemConfig.display);
+            notificationForm.setFieldsValue(initialSystemConfig.notification);
+            dataManagementForm.setFieldsValue(initialSystemConfig.dataManagement);
+            integrationForm.setFieldsValue(initialSystemConfig.integration);
+            setSystemConfig(initialSystemConfig);
+            message.success('已重置所有设置为系统默认值');
+            addConfigChangeLog('所有设置', '重置所有设置为默认值');
+            break;
+          default:
+            break;
+        }
+      }
+    });
   };
 
   // 备份系统设置
   const backupSystemSettings = () => {
     setBackupLoading(true);
+    message.loading({ content: '正在备份系统设置...', key: 'backup' });
+    
     setTimeout(() => {
       setBackupLoading(false);
-      message.success('系统设置已成功备份');
+      message.success({ content: '系统设置备份成功', key: 'backup' });
       
-      // 模拟下载文件
-      const dataStr = JSON.stringify(systemConfig, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-      
-      const exportFileName = `system-settings-backup-${new Date().toISOString().slice(0,10)}.json`;
-      
-      const linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileName);
-      linkElement.click();
-      
-      // 添加设置变更日志
+      // 创建一个备份日志
       addConfigChangeLog('系统备份', '创建了系统设置备份');
-    }, 1000);
+      
+      // 模拟下载备份文件
+      const backupData = JSON.stringify(systemConfig, null, 2);
+      const blob = new Blob([backupData], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ship-tracking-system-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 1500);
+  };
+
+  // 恢复系统设置
+  const restoreSystemSettings = () => {
+    message.info('请选择备份文件进行恢复');
   };
 
   // 测试集成连接
   const testIntegrationConnection = (integrationType: string) => {
     setTestingIntegration(true);
+    message.loading({ content: `正在测试${integrationType}连接...`, key: 'integration' });
+    
     setTimeout(() => {
       setTestingIntegration(false);
-      message.success(`成功连接到${integrationType}服务`);
+      message.success({ content: `${integrationType}连接测试成功`, key: 'integration' });
+      
+      // 添加测试日志
+      addConfigChangeLog('集成测试', `测试了${integrationType}连接`);
     }, 1500);
+  };
+
+  // 清理系统数据
+  const cleanupSystemData = (dataType: string) => {
+    Modal.confirm({
+      title: '确认清理数据',
+      content: `确定要清理${dataType}数据吗？此操作不可恢复。`,
+      okText: '确定',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: () => {
+        message.loading({ content: `正在清理${dataType}数据...`, key: 'cleanup' });
+        
+        setTimeout(() => {
+          message.success({ content: `${dataType}数据清理完成`, key: 'cleanup' });
+          
+          // 添加清理日志
+          addConfigChangeLog('数据清理', `清理了${dataType}数据`);
+        }, 1500);
+      }
+    });
+  };
+
+  // 导出配置
+  const exportConfiguration = () => {
+    const configData = JSON.stringify(systemConfig, null, 2);
+    const blob = new Blob([configData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ship-tracking-system-config-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    message.success('系统配置已导出');
+    addConfigChangeLog('配置导出', '导出了系统配置');
   };
 
   // 配置历史记录表格列定义
@@ -364,6 +442,29 @@ const SystemSettings: React.FC = () => {
           <Title level={3}><SettingOutlined /> 系统设置</Title>
           <Text type="secondary">配置和管理系统的全局设置，包括界面显示、数据管理、通知和集成等</Text>
         </div>
+        
+        <Space size="middle">
+          <Button 
+            icon={<CloudUploadOutlined />} 
+            onClick={backupSystemSettings}
+            loading={backupLoading}
+          >
+            备份设置
+          </Button>
+          <Button 
+            icon={<CloudDownloadOutlined />} 
+            onClick={restoreSystemSettings}
+            loading={restoreLoading}
+          >
+            恢复设置
+          </Button>
+          <Button 
+            icon={<UndoOutlined />} 
+            onClick={() => resetToDefaults('all')}
+          >
+            重置所有
+          </Button>
+        </Space>
       </div>
 
       <Tabs activeKey={activeTab} onChange={setActiveTab} className="settings-tabs">
